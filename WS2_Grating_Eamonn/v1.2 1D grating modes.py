@@ -450,7 +450,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
 
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
     pcm = axs.pcolor(k_scan,1.240/lbda,signalR,cmap='viridis',clim=(0,1))
-    axs.set(xlabel='k$_x$($\mu$m)',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy(eV)',title=title_name)
+    axs.set(xlabel=f'k$_x$ [{greek.mu}m]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')
@@ -516,11 +516,12 @@ def range_in(start:float, stop:float, n_points:int) -> List[float]:
 def main() -> None:
     iterations = 0
 
-    periods = range_in(0.4, 0.5, 5)
-    thicknesses = range_in(0.018,0.038,10)
-    #periods = [0.4]
-    #thicknesses = [0.038]
-    filling = [0.76, 0.8, 0.84]
+    #periods = range_in(0.4, 0.5, 5)
+    #thicknesses = range_in(0.018,0.038,10)
+    periods = [0.48]
+    thicknesses = [0.026]
+    #filling = [0.76, 0.8, 0.84]
+    filling = [0.88]
 
     for ax in periods:
         for t in thicknesses:
