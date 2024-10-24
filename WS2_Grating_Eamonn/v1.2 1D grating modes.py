@@ -48,6 +48,10 @@ class Pattern:
         self.size = size
         self.angle = angle
 
+    def __str__(self):
+        return (f"Pattern(p={self.period:.3f}, ff={self.filling:.3f}, "
+                f"w={self.width:.3f}, form={self.form:.3f})")
+
 
 class Material:
     """
@@ -152,7 +156,30 @@ class Waveguide:
         for i, layer in enumerate(self._layers):
             print(f"\nLayer {i + 1}:")
             mat_index = material_names.index(layer.name) + 1
-            layer.describe(extra=f"Thickness: {layer.thickness}\nMaterial index: {mat_index}")
+            disp = [dispersion for dispersion in [layer.material_n_k, layer.material_path] if dispersion is not None]
+            layer.describe(extra=f"Thickness/sub: {layer.thickness}/{layer.thickness_sub}\n"
+                                 f"Material index: {mat_index}\nDispersion: {disp[0]}")
+
+    def summary_txt(self) -> str:
+        summary = ""
+        details = [
+            'name',
+            'dispersive',
+            'material_path',
+            'material_n_k',
+            'pattern',
+            'description',
+            'thickness',
+            'thickness_sub'
+        ]
+        for i,layer in enumerate(self._layers):
+            summary += f"-- Layer {i+1} --\n"
+            for detail in details:
+                value = getattr(layer, detail)  # Get the value of the attribute
+                summary += f"{detail}: {value}\n"  # Append to summary string
+            summary += '\n'
+
+        return summary
 
 
     def _materials_RCWA(self) -> List[str | List]:
@@ -244,7 +271,7 @@ def time_it(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"{elapsed_time:.1f} seconds elapsed")
+        print(f"{elapsed_time:.1f} seconds elapsed - {func.__name__}")
         return result
     return wrapper
 
@@ -348,7 +375,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
     swg.add_layer(Si_layer)
 
     material_RCWA, layer_RCWA, pattern_RCWA = swg.export_RCWA_format(sub=False)
-    swg.describe()
+    # swg.describe()
 
     material_RCWA_sub, layer_RCWA_sub, pattern_RCWA_sub = swg.export_RCWA_format(sub=True)
 
@@ -412,7 +439,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
     # legacy save name string
     #saving_name='t'+str("%.0f" % np.multiply(1e3,t))+'nm a='+str("%.0f" % np.multiply(1e3,ax))+'nm FF='+str("%.2f" % FF)
 
-    details = (f"t={WS2_layer.thickness*1e3:.0f}nm "
+    # change t=layer.thickness variable when running other sims
+    details = (f"t={WS2_layer.thickness*1e3:.1f}nm "
                f"{greek.Lambda}={ax*1e3:.0f}nm "
                f"FF={FF:.2f}")
 
@@ -454,6 +482,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
     T_sub_data=np.column_stack([lbda, T_sub])
     T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
 
+
     np.savetxt(data_folder / (Project_name + ' - ' + details + "_R.csv"), R_data, delimiter=',')
     np.savetxt(data_folder / (Project_name + ' - ' + details + "_A.csv"), A_data, delimiter=',')
     np.savetxt(data_folder / (Project_name + ' - ' + details + "_T.csv"), T_data, delimiter=',')
@@ -461,10 +490,18 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
     np.savetxt(data_folder / (Project_name + ' - ' + details + "_A_sub.csv"), A_sub_data, delimiter=',')
     np.savetxt(data_folder / (Project_name + ' - ' + details + "_T_sub.csv"), T_sub_data, delimiter=',')
 
+    info_file_path = data_folder / f"INFO {Project_name} - {details}.txt"
+    with open(info_file_path, 'w') as f:
+        f.write(swg.summary_txt())
+
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
     plt.savefig(images_folder / f"{Project_name} - {details}.png", dpi=150)
     plt.show()
+
+
+    print("*** SUMMARY ***")
+    print(swg.summary_txt())
 
 
 def range_in(start:float, stop:float, n_points:int) -> List[float]:
@@ -480,11 +517,13 @@ def main() -> None:
     iterations = 0
 
     periods = range_in(0.4, 0.5, 5)
-    thickesses = range_in(0.018,0.038,10)
-    filling = [0.8]
+    thicknesses = range_in(0.018,0.038,10)
+    #periods = [0.4]
+    #thicknesses = [0.038]
+    filling = [0.76, 0.8, 0.84]
 
     for ax in periods:
-        for t in thickesses:
+        for t in thicknesses:
             for ff in filling:
                 iterations += 1
                 try:
