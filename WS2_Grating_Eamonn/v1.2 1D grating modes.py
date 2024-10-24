@@ -455,6 +455,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')
     cbar.set_label('Reflectivity contrast')
+    plt.minorticks_on()
 
     cwd = Path(os.getcwd())
     results_dir = cwd / "Results"
@@ -518,7 +519,7 @@ def main() -> None:
 
     #periods = range_in(0.4, 0.5, 5)
     #thicknesses = range_in(0.018,0.038,10)
-    periods = [0.48]
+    periods = [0.44]
     thicknesses = [0.026]
     #filling = [0.76, 0.8, 0.84]
     filling = [0.88]
@@ -528,7 +529,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff)
+                    run_simulation(150, period=ax, thickness=t, filling=ff)
                 except SizeLimitException:
                     continue # skip current iteration if features <100nm
                 finally:
