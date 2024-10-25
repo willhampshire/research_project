@@ -280,7 +280,8 @@ def time_it(func):
 
 # main function
 @time_it
-def run_simulation(N:int, period:float, thickness:float, filling:float):
+def run_simulation(N:int, period:float, thickness:float, filling:float,
+                   experiment_suf:str=None):
     """
     Main sim function.
     :param N simulation resolution
@@ -319,9 +320,9 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
                    material_n_k=[1.46,0],
                    description=f"Silicon Dioxide substrate.")
 
-    # hBN = Material(f'hBN', dispersive=True,
-    #                 material_path='Materials/hBN_Zotev.txt',
-    #                 description=f"HBN.")
+    hBN = Material(f'hBN', dispersive=True,
+                    material_path='Materials/hBN_Zotev.txt',
+                    description=f"HBN.")
 
     Si = Material(f'Si', dispersive=True,
                    material_path='Materials/cSi_Green_2008.txt',
@@ -337,7 +338,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
                    description=f"TMD layer, WS{phys.sub_2}.")
 
 
-    min_detail = 0.01  # um
+    min_detail = 100/1000  # 100 nm
 
     ax=period # range .2 ~ .6
     FF=filling # ~ .8
@@ -357,7 +358,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
     air_layer = air.make_layer(t=0, t_sub=0)
     WS2_layer = WS2.make_layer(t=thickness, t_sub=0)
     Si_layer = Si.make_layer(2)
-    Au_layer = Au.make_layer(0.150)
+    # Au_layer = Au.make_layer(0.150)
     SiO2_layer = SiO2.make_layer(0.29)
 
     # pattern the grating layer
@@ -445,6 +446,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float):
                f"FF={FF:.2f}")
 
     Project_name = swg.get_summary_name()
+    Project_name += f' {experiment_suf}'
+
     title_name = f"{Project_name}\n{details}"
     plt.rcParams['font.size'] = '16'
 
@@ -517,20 +520,21 @@ def range_in(start:float, stop:float, n_points:int) -> List[float]:
 def main() -> None:
     iterations = 0
 
-    #periods = range_in(0.4, 0.5, 5)
-    #thicknesses = range_in(0.018,0.038,10)
-    periods = [0.44]
-    thicknesses = [0.026]
+    periods = range_in(0.2, 0.6, 9)
+    thicknesses = range_in(0.02, 0.1, 9)
+    #periods = [0.4, 0.45, 0.5]
+    #thicknesses = [0.026]
     #filling = [0.76, 0.8, 0.84]
-    filling = [0.88]
+    filling = [0.74, 0.78, 0.82, 0.86, 0.88]
 
     for ax in periods:
         for t in thicknesses:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(150, period=ax, thickness=t, filling=ff)
-                except SizeLimitException:
+                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='2')
+                except SizeLimitException as e:
+                    print(e.message)
                     continue # skip current iteration if features <100nm
                 finally:
                     print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
