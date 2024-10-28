@@ -451,7 +451,6 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
         T_sub[remove_lambda,i_k]=np.nan
 
 
-    # %% Plot result
     signalR = (R - R_sub) / R_sub
     signalR = (signalR - np.min(signalR)) / (np.max(signalR) - np.min(signalR))
     # signalR=R
