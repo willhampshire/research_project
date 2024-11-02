@@ -1,29 +1,16 @@
-import pandas as pd
+import numpy as np
+from typing import List
 
 
-def summary_csv(self):
-    # Initialize an empty list to hold records
-    records = []
-    details = [
-        'name',
-        'dispersive',
-        'material_path',
-        'material_n_k',
-        'pattern',
-        'description',
-        'thickness',
-        'thickness_sub'
-    ]
+def range_in(start:float, stop:float, step:float) -> List[float]:
+    """
+    Inclusive range generator
+    Output rounded to 6dp
+    :return: np.array
+    """
+    n_points = round(((stop-start)/step),0) +1
+    linspace = list(np.linspace(start, stop, int(n_points)))
+    return [round(num, 6) for num in linspace]
 
-    # Loop through each layer and create a record for it
-    for layer in self._layers:
-        record = {}
-        for detail in details:
-            # Use getattr to safely get the attribute
-            record[detail] = getattr(layer, detail, None)
-        records.append(record)
-
-    # Create DataFrame from the list of records
-    summary = pd.DataFrame(records, columns=details)
-
-    return summary
+range = range_in(0.25, 0.60, 0.05)
+print(range)

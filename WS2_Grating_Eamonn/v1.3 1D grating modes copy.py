@@ -470,8 +470,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
                f"{greek.Lambda}={ax*1e3:.0f}nm "
                f"FF={FF:.2f}")
 
-    # project_name = f'{swg.get_summary_name()} {experiment_suf}'
-    project_name = 'feature testing'
+    project_name = f'{swg.get_summary_name()} {experiment_suf}'
+    # project_name = 'feature testing'
 
     title_name = f"{project_name}\n{details}"
     plt.rcParams['font.size'] = '16'
@@ -532,36 +532,44 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
     plt.show()
 
 
-    print("*** SUMMARY ***")
-    print(swg.summary_txt())
+    # print("*** SUMMARY ***")
+    # print(swg.summary_txt())
 
 
-def range_in(start:float, stop:float, n_points:int) -> List[float]:
+def range_in(start:float, stop:float, step:float) -> List[float]:
     """
     Inclusive range generator
+    Output rounded to 6dp
     :return: np.array
     """
-    return list(np.linspace(start, stop, n_points))
+    n_points = round(((stop-start)/step),0) +1
+    linspace = list(np.linspace(start, stop, int(n_points)))
+    return [round(num, 6) for num in linspace]
 
 # main entry point
 @time_it
 def main() -> None:
     iterations = 0
 
-    # periods = [0.5]
-    # thicknesses = [0.026]
-    # filling = [0.76]
+    periods = [0.2, 0.4, 0.6]
+    thicknesses = [0.02, 0.06, 0.1]
+    filling = [0.5, 0.7, 0.9]
 
-    periods = range_in(0.2, 0.6, 9)
-    thicknesses = range_in(0.02, 0.1, 9)
-    filling = [0.74, 0.78, 0.82, 0.86, 0.88]
+    # periods = range_in(0.25, 0.6, 0.05)
+    # thicknesses = range_in(0.02, 0.1, (5/1000))
+    # filling = range_in(0.5, 0.9, 0.1)
+
+    num_loops = len(periods)*len(thicknesses)*len(filling)
+    print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
+    print(f"PERIODS {periods}\nTHICKNESSES {thicknesses}\nFILLINGS {filling}")
+    time.sleep(1)
 
     for ax in periods:
         for t in thicknesses:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='2')
+                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='3')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm

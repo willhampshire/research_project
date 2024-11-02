@@ -381,7 +381,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
     material_RCWA_sub, layer_RCWA_sub, pattern_RCWA_sub = swg.export_RCWA_format(sub=True)
 
 
-    # print(swg.export_RCWA_format(sub=False, as_df=True))
+    print(swg.export_RCWA_format(sub=False, as_df=True))
     # print(pd.Series(pattern_RCWA))
     # print(pattern_RCWA)
 
