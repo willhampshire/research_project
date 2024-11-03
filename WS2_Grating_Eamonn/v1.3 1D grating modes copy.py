@@ -556,13 +556,13 @@ def range_in(start:float, stop:float, step:float) -> List[float]:
 def main() -> None:
     iterations = 0
 
-    periods = [0.2, 0.4, 0.6]
-    thicknesses = [0.02, 0.06, 0.1]
-    filling = [0.5, 0.7, 0.9]
+    # periods = [0.2, 0.4, 0.6]
+    # thicknesses = [0.02, 0.06, 0.1]
+    # filling = [0.5, 0.7, 0.9]
 
-    # periods = range_in(0.25, 0.6, 0.05)
-    # thicknesses = range_in(0.02, 0.1, (5/1000))
-    # filling = range_in(0.5, 0.9, 0.1)
+    periods = range_in(0.3, 0.6, 0.05)
+    thicknesses = range_in(0.02, 0.1, (10/1000))
+    filling = range_in(0.5, 0.85, 0.05)
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
