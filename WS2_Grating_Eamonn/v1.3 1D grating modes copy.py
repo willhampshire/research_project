@@ -342,9 +342,14 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
                  description="Air.")
 
     # 'Materials/SiO2_Horiba.txt'
-    SiO2 = Material(f'SiO{phys.sub_2}', dispersive=False,
-                   material_n_k=[1.46,0],
-                   description=f"Silicon Dioxide substrate.")
+    # SiO2 = Material(f'SiO{phys.sub_2}', dispersive=False,
+    #                material_n_k=[1.46,0],
+    #                description=f"Silicon Dioxide substrate.")
+
+    SiO2 = Material(f'SiO{phys.sub_2}', dispersive=True,
+                    material_path='Materials/SiO2_Horiba.txt',
+                    description=f"Silicon Dioxide substrate.")
+
 
     hBN = Material(f'hBN', dispersive=True,
                     material_path='Materials/hBN_Zotev.txt',
@@ -569,7 +574,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='3')
+                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='testSiO2dispersive')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm
