@@ -574,7 +574,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='testSiO2dispersive')
+                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='4')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm
