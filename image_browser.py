@@ -20,35 +20,37 @@ class ImageBrowserApp:
         self.project_folder = None
         self.image_paths = []
         self.current_image_index = 0
-        self.dimensions: dict = {'t': [],
-                                 'ax': [],
-                                 'ff': []}
+        self.dimensions: dict = {'img': [], 't': [], 'ax': [], 'ff': []}
+        self.dimensions_df: pd.DataFrame = pd.DataFrame(self.dimensions) # init empty dataframe type safety
 
         # Set default project directory (cwd / WS2_Grating_Eamonn / Results)
         self.default_project_dir = Path.cwd() / "WS2_Grating_Eamonn" / "Results"
 
-        # Frame for dropdowns
-        dropdown_frame = tk.Frame(root)
-        dropdown_frame.pack(pady=10)  # Add some vertical padding to the frame
+        # Create a notebook (tabbed interface)
+        self.notebook = ttk.Notebook(root)
+        self.notebook.pack(expand=True, fill='both')
 
-        # Dropdown for Compare (GUI X)
-        self.compare_x_var = tk.StringVar()
-        self.compare_x_combobox = ttk.Combobox(dropdown_frame, textvariable=self.compare_x_var)
-        self.compare_x_combobox['values'] = ("Thickness", "Period", "Filling")
-        self.compare_x_combobox.current(0)  # Set default selection
-        self.compare_x_combobox.pack(side="left", padx=5)  # Add horizontal padding
-        self.compare_x_combobox.bind("<<ComboboxSelected>>", self.compare_x_selected)
+        # Create frames for each tab
+        self.image_frame = ttk.Frame(self.notebook)
+        self.dropdown_frame = ttk.Frame(self.notebook)
 
-        # Dropdown for Compare (GUI Y)
-        self.compare_y_var = tk.StringVar()
-        self.compare_y_combobox = ttk.Combobox(dropdown_frame, textvariable=self.compare_y_var)
-        self.compare_y_combobox['values'] = ("Thickness", "Period", "Filling")
-        self.compare_y_combobox.current(0)  # Set default selection
-        self.compare_y_combobox.pack(side="left", padx=5)  # Add horizontal padding
-        self.compare_y_combobox.bind("<<ComboboxSelected>>", self.compare_y_selected)
+        # Add frames to notebook
+        self.notebook.add(self.image_frame, text='Single Image')
+        self.notebook.add(self.dropdown_frame, text='Multi Image')
 
+        # Setup Image Frame (all existing functionality goes here)
+        self.setup_image_frame()
+
+        # Setup Dropdown Frame
+        self.setup_dropdown_frame()
+
+        # Start by loading the default project folder
+        self.load_project_folder(initial=True)
+
+    def setup_image_frame(self):
+        """Setup the image frame with navigation buttons and image display."""
         # Frame for navigation buttons
-        nav_frame = tk.Frame(root)
+        nav_frame = tk.Frame(self.image_frame)
         nav_frame.pack(pady=10)  # Add some vertical padding to the frame
 
         # Configure grid layout for nav_frame
@@ -72,21 +74,46 @@ class ImageBrowserApp:
         self.plus_10_button.grid(row=0, column=3, padx=5)  # Add horizontal padding
 
         # Image display area
-        self.image_label = tk.Label(root)
+        self.image_label = tk.Label(self.image_frame)
         self.image_label.pack()
 
         # Current image display label
-        self.current_image_label = tk.Label(root, text="")
+        self.current_image_label = tk.Label(self.image_frame, text="")
         self.current_image_label.pack()
 
         # Load project button
-        load_button = tk.Button(root, text="Select Project Folder", command=self.load_project_folder)
+        load_button = tk.Button(self.image_frame, text="Select Project Folder", command=self.load_project_folder)
         load_button.pack()
 
-        # Start by loading the default project folder
-        self.load_project_folder(initial=True)
+    # Setup Dropdown Frame
+    def setup_dropdown_frame(self):
+        """Setup the dropdowns in the comparison frame."""
+        # Label for X
+        x_label = tk.Label(self.dropdown_frame, text="X:")
+        x_label.pack(side="left", padx=5)  # Add horizontal padding
 
+        # Dropdown for Compare (GUI X)
+        self.compare_x_var = tk.StringVar()
+        self.compare_x_combobox = ttk.Combobox(self.dropdown_frame, textvariable=self.compare_x_var,
+                                               state="readonly")  # Set state to readonly
+        self.compare_x_combobox['values'] = ("Thickness", "Period", "Filling")
+        self.compare_x_combobox.current(0)  # Set default selection
+        self.compare_x_combobox.pack(side="left", padx=5)  # Add horizontal padding
+        self.compare_x_combobox.bind("<<ComboboxSelected>>", self.compare_x_selected)
 
+        # Label for Y
+        y_label = tk.Label(self.dropdown_frame, text="Y:")
+        y_label.pack(side="left", padx=5)  # Add horizontal padding
+
+        # Dropdown for Compare (GUI Y)
+        self.compare_y_var = tk.StringVar()
+        self.compare_y_combobox = ttk.Combobox(self.dropdown_frame, textvariable=self.compare_y_var,
+                                               state="readonly")  # Set state to readonly
+        self.compare_y_combobox['values'] = ("Thickness", "Period", "Filling")
+        (self.compare_y_combobox
+         .current(0))  # Set default selection
+        self.compare_y_combobox.pack(side="left", padx=5)  # Add horizontal padding
+        self.compare_y_combobox.bind("<<ComboboxSelected>>", self.compare_y_selected)
 
     def load_project_folder(self, initial=False):
         """Load the project folder, with an initial directory prompt."""
@@ -118,18 +145,13 @@ class ImageBrowserApp:
             # Loop through each experiment folder in the selected project folder
             for experiment_folder in self.project_folder.iterdir():
                 if experiment_folder.is_dir():
-                    # print(f"- Experiment: {experiment_folder}")
-
                     # Define the 'images' directory within each experiment folder
                     images_folder = experiment_folder / "images"
 
                     # Check if the 'images' folder exists
                     if images_folder.exists() and images_folder.is_dir():
-                        # print(f"  Found 'images' directory: {images_folder}")
-
                         # Search for PNG files within the 'images' folder
                         for image_file in images_folder.glob("*.png"):
-                            # print(f"    Found image: {image_file}")
                             self.image_paths.append(image_file)
 
             if not self.image_paths:
@@ -146,10 +168,8 @@ class ImageBrowserApp:
         self.determine_dimensions()
 
     def determine_dimensions(self):
-        # Example filename: WS₂, SiO₂, Si 4 - t=20.0nm Λ=300nm FF=0.50.png
-
-        for _,image in enumerate(self.image_paths):
-
+        """Extract dimensions from image filenames."""
+        for _, image in enumerate(self.image_paths):
             img_name = image.name
 
             # Define the regex pattern
@@ -165,13 +185,10 @@ class ImageBrowserApp:
                 period = float(match.group(3))  # Λ
                 filling_fraction = float(match.group(5))  # FF
 
+                self.dimensions['img'].append(image)
                 self.dimensions['t'].append(thickness)
                 self.dimensions['ax'].append(period)
                 self.dimensions['ff'].append(filling_fraction)
-
-                # Print the dimensions
-                # print(
-                #     f"Dimensions:\n  Thickness (t): {thickness} nm\n  Period (Λ): {period} nm\n  Filling Fraction (FF): {filling_fraction}")
             else:
                 print("No match found.")
 
@@ -179,6 +196,7 @@ class ImageBrowserApp:
         df.info()
         print(df.head())
 
+        self.dimensions_df = df
 
     def show_image(self, index):
         """Display image at the given index while preserving its aspect ratio."""
@@ -232,7 +250,6 @@ class ImageBrowserApp:
         """Handle selection from Compare (GUI Y) dropdown."""
         selected_value = self.compare_y_var.get()
         print(f"Compare (GUI Y) selected: {selected_value}")
-
 
 # Run the app
 if __name__ == "__main__":
