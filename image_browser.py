@@ -131,23 +131,29 @@ class ImageBrowserApp:
         unique_y = sorted(self.dimensions_df[self.y_dim].unique())
 
         # print(pd.DataFrame({'x':unique_x, 'y':unique_y}))
+        third_name = self.get_third_var([self.x_dim, self.y_dim])
+        unique_third = sorted(self.dimensions_df[third_name].unique())
 
         for row_idx, x_value in enumerate(unique_x):
             for col_idx, y_value in enumerate(unique_y):
-                # Filter images matching current X and Y values
-                image_paths = self.dimensions_df[(self.dimensions_df[self.x_dim] == x_value) &
-                                                 (self.dimensions_df[self.y_dim] == y_value)]['img'].tolist()
-                print(np.shape(image_paths))
-                if image_paths:
-                    # Display the first image that matches the criteria
-                    image = Image.open(image_paths[self.third_var_loc])
-                    image.thumbnail((250, 250))
-                    img_tk = ImageTk.PhotoImage(image)
+                for third_idx, third_value in enumerate(unique_third):
+                    # Filter images matching current X and Y values
+                    image_paths = self.dimensions_df[(self.dimensions_df[str(third_name)] == third_value) &
+                                                     (self.dimensions_df[str(self.x_dim)] == x_value) &
+                                                     (self.dimensions_df[str(self.y_dim)] == y_value)]['img'].tolist()
+                    print(np.shape(image_paths), image_paths)
+                    try:
+                        # Display the first image that matches the criteria
+                        image = Image.open(image_paths[self.third_var_loc])
+                        image.thumbnail((250, 250))
+                        img_tk = ImageTk.PhotoImage(image)
 
-                    # Create and place the label with the image in the grid
-                    img_label = tk.Label(self.scrollable_frame, image=img_tk)
-                    img_label.image = img_tk  # Keep a reference to prevent garbage collection
-                    img_label.grid(row=row_idx, column=col_idx, padx=5, pady=5)
+                        # Create and place the label with the image in the grid
+                        img_label = tk.Label(self.scrollable_frame, image=img_tk)
+                        img_label.image = img_tk  # Keep a reference to prevent garbage collection
+                        img_label.grid(row=row_idx, column=col_idx, padx=5, pady=5)
+                    except:
+                        print(f"Could not open - image_paths{image_paths}")
 
         # Adjust canvas scroll region based on new grid
         self.scrollable_frame.update_idletasks()
@@ -225,21 +231,23 @@ class ImageBrowserApp:
         self.decrement_button = tk.Button(controls_frame, text="-", command=self.decrement_third_variable)
         self.decrement_button.pack(side="left", padx=5)
 
+    def get_third_var(self, vars:list):
+        all_vars = self.selection_mapping.keys()
+        return [var for var in vars if var not in all_vars][0]
+
     def increment_third_variable(self):
         """Increment the third variable based on the current selections."""
         vars = [self.x_dim, self.y_dim]
-        all_vars = self.selection_mapping.keys()
-        third_var = [var for var in vars if var not in all_vars][0]
-        self.third_variable(1, third_var)
+        third_var = self.get_third_var(vars)
+        self.set_third_variable(1, third_var)
 
     def decrement_third_variable(self):
         """Decrement the third variable based on the current selections."""
         vars = [self.x_dim, self.y_dim]
-        all_vars = self.selection_mapping.keys()
-        third_var = [var for var in vars if var not in all_vars][0]
-        self.third_variable(-1, third_var)
+        third_var = self.get_third_var(vars)
+        self.set_third_variable(-1, third_var)
 
-    def third_variable(self, direction:int, var:str):
+    def set_third_variable(self, direction:int, var:str):
         if (self.third_var_loc + direction) >= 0:
             self.third_var_loc += direction
         else:
