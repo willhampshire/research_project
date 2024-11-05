@@ -224,7 +224,7 @@ class ImageBrowserApp:
         self.compare_x_var = tk.StringVar()
         self.compare_x_combobox = ttk.Combobox(controls_frame, textvariable=self.compare_x_var, state="readonly")
         self.compare_x_combobox['values'] = ("Thickness", "Period", "Filling")
-        self.compare_x_combobox.current(1)
+        self.compare_x_combobox.current(0)
         self.compare_x_combobox.pack(side="left", padx=5)
         self.compare_x_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
 
@@ -234,7 +234,7 @@ class ImageBrowserApp:
         self.compare_y_var = tk.StringVar()
         self.compare_y_combobox = ttk.Combobox(controls_frame, textvariable=self.compare_y_var, state="readonly")
         self.compare_y_combobox['values'] = ("Thickness", "Period", "Filling")
-        self.compare_y_combobox.current(0)
+        self.compare_y_combobox.current(1)
         self.compare_y_combobox.pack(side="left", padx=5)
         self.compare_y_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
 
