@@ -13,6 +13,7 @@ class ImageBrowserApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Image Browser")
+        self.firstrun = 0
 
         # Set default window size to one-third of the screen width
         screen_width = self.root.winfo_screenwidth()
@@ -41,6 +42,10 @@ class ImageBrowserApp:
         self.notebook.add(self.image_frame, text='Single Image')
         self.notebook.add(self.dropdown_frame, text='Multi Image')
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
+
+        # Bind Page Up and Page Down keys to scroll vertically
+        self.root.bind("<Next>", lambda e: self.canvas.yview_scroll(1, "pages"))
+        self.root.bind("<Prior>", lambda e: self.canvas.yview_scroll(-1, "pages"))
 
         # Setup Image Frame (all existing functionality goes here)
         self.setup_image_frame()
@@ -100,15 +105,18 @@ class ImageBrowserApp:
             print("Multi Image tab selected.")
             self.refresh_grid()  # Call any function you want when this tab is selected
 
-    def refresh_grid(self, event=None):
+    def refresh_grid(self, event=None, third_var_call=0):
         """Refresh the grid layout based on dropdown selection."""
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
-        assert self.determine_dimensions()
+        # Ensure dimensions have been parsed
+        if not self.determine_dimensions():
+            return
 
-        x_sel = self.compare_x_selected(event)
-        y_sel = self.compare_y_selected(event)
+        # Get selected values for X, Y, and third variables
+        x_sel = self.compare_x_var.get()
+        y_sel = self.compare_y_var.get()
 
         # Map dropdown selections to dataframe columns
         self.selection_mapping = {
@@ -124,27 +132,35 @@ class ImageBrowserApp:
             print("Invalid selection.")
             return
 
-        # print(self.dimensions_df.head())
-
-        # Group the images by the selected X and Y dimensions
+        # Group images by the selected X, Y, and third variable values
         unique_x = sorted(self.dimensions_df[self.x_dim].unique())
         unique_y = sorted(self.dimensions_df[self.y_dim].unique())
 
-        # print(pd.DataFrame({'x':unique_x, 'y':unique_y}))
-        third_name = self.get_third_var([self.x_dim, self.y_dim])
-        unique_third = sorted(self.dimensions_df[third_name].unique())
+        third_var = self.get_third_var([self.x_dim, self.y_dim])
+        unique_third = sorted(self.dimensions_df[third_var].unique())
+        print(f"THIRD VARIABLE = {third_var}")
+
+        self.third_var_combobox['values'] = [str(val) for val in unique_third]
+        if third_var_call == 0:
+            self.third_var_combobox.set(str(unique_third[0]))
+            self.firstrun += 1
+
+        # Get the selected value for the third variable
+        selected_third_value = float(self.third_var_var.get())
 
         for row_idx, x_value in enumerate(unique_x):
             for col_idx, y_value in enumerate(unique_y):
-                for third_idx, third_value in enumerate(unique_third):
-                    # Filter images matching current X and Y values
-                    image_paths = self.dimensions_df[(self.dimensions_df[str(third_name)] == third_value) &
-                                                     (self.dimensions_df[str(self.x_dim)] == x_value) &
-                                                     (self.dimensions_df[str(self.y_dim)] == y_value)]['img'].tolist()
-                    print(np.shape(image_paths), image_paths)
-                    try:
-                        # Display the first image that matches the criteria
-                        image = Image.open(image_paths[self.third_var_loc])
+                # Filter images matching current X, Y, and third variable values
+                image_paths = self.dimensions_df[
+                    (self.dimensions_df[third_var] == selected_third_value) &
+                    (self.dimensions_df[self.x_dim] == x_value) &
+                    (self.dimensions_df[self.y_dim] == y_value)
+                    ]['img'].tolist()
+
+                try:
+                    # Display the first image that matches the criteria
+                    if image_paths:
+                        image = Image.open(image_paths[0])
                         image.thumbnail((250, 250))
                         img_tk = ImageTk.PhotoImage(image)
 
@@ -152,8 +168,9 @@ class ImageBrowserApp:
                         img_label = tk.Label(self.scrollable_frame, image=img_tk)
                         img_label.image = img_tk  # Keep a reference to prevent garbage collection
                         img_label.grid(row=row_idx, column=col_idx, padx=5, pady=5)
-                    except:
-                        print(f"Could not open - image_paths{image_paths}")
+                except Exception as e:
+                    print(f"Could not open image. Error: {e}")
+                    print(f"Image paths: {image_paths}")
 
         # Adjust canvas scroll region based on new grid
         self.scrollable_frame.update_idletasks()
@@ -197,7 +214,6 @@ class ImageBrowserApp:
         load_button = tk.Button(self.image_frame, text="Select Project Folder", command=self.load_project_folder)
         load_button.pack()
 
-    # Setup Dropdown Frame
     def setup_dropdown_frame(self):
         """Setup the dropdowns and control buttons in a top row of the Multi Image frame."""
 
@@ -213,7 +229,7 @@ class ImageBrowserApp:
         self.compare_x_combobox['values'] = ("Thickness", "Period", "Filling")
         self.compare_x_combobox.current(1)
         self.compare_x_combobox.pack(side="left", padx=5)
-        self.compare_x_combobox.bind("<<ComboboxSelected>>", self.compare_x_selected)
+        self.compare_x_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
 
         # Label and dropdown for Y dimension selection
         y_label = tk.Label(controls_frame, text="Y:")
@@ -223,17 +239,26 @@ class ImageBrowserApp:
         self.compare_y_combobox['values'] = ("Thickness", "Period", "Filling")
         self.compare_y_combobox.current(0)
         self.compare_y_combobox.pack(side="left", padx=5)
-        self.compare_y_combobox.bind("<<ComboboxSelected>>", self.compare_y_selected)
+        self.compare_y_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
 
-        # Add increment and decrement buttons for the third variable
-        self.increment_button = tk.Button(controls_frame, text="+", command=self.increment_third_variable)
-        self.increment_button.pack(side="left", padx=5)
-        self.decrement_button = tk.Button(controls_frame, text="-", command=self.decrement_third_variable)
-        self.decrement_button.pack(side="left", padx=5)
+        # Dropdown for third variable selection
+        third_label = tk.Label(controls_frame, text="Third Variable:")
+        third_label.pack(side="left", padx=5)
+        self.third_var_var = tk.StringVar()
+        self.third_var_combobox = ttk.Combobox(controls_frame, textvariable=self.third_var_var, state="readonly")
+        self.third_var_combobox.pack(side="left", padx=5)
+        # self.third_var_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
+        self.third_var_combobox.bind("<<ComboboxSelected>>", lambda event: self.refresh_grid(event, third_var_call=1))
 
     def get_third_var(self, vars:list):
-        all_vars = self.selection_mapping.keys()
-        return [var for var in vars if var not in all_vars][0]
+        all_vars = self.selection_mapping.values()
+        all_vars_list = list(all_vars)
+        for var in all_vars_list:
+            print(var, vars, all_vars_list)
+            if str(var) not in vars:
+                print("FOUND")
+                return var
+        return 0
 
     def increment_third_variable(self):
         """Increment the third variable based on the current selections."""
