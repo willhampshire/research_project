@@ -60,8 +60,6 @@ class ImageBrowserApp:
         self.dimensions_df = pd.DataFrame(self.dimensions)
         self.third_var_loc: int = 0
 
-        # Frame for grid display
-        # Create a container frame to hold the canvas and scrollbars in grid layout
         self.scroll_container = tk.Frame(self.dropdown_frame)
         self.scroll_container.pack(expand=True, fill="both")
 
@@ -157,20 +155,19 @@ class ImageBrowserApp:
                     (self.dimensions_df[self.y_dim] == y_value)
                     ]['img'].tolist()
 
-                try:
-                    # Display the first image that matches the criteria
-                    if image_paths:
-                        image = Image.open(image_paths[0])
-                        image.thumbnail((250, 250))
+                for image_path in image_paths:  # Load all images that match the criteria
+                    try:
+                        image = Image.open(image_path)
+                        image.thumbnail((250, 250))  # Resize image for display
                         img_tk = ImageTk.PhotoImage(image)
 
                         # Create and place the label with the image in the grid
                         img_label = tk.Label(self.scrollable_frame, image=img_tk)
                         img_label.image = img_tk  # Keep a reference to prevent garbage collection
                         img_label.grid(row=row_idx, column=col_idx, padx=5, pady=5)
-                except Exception as e:
-                    print(f"Could not open image. Error: {e}")
-                    print(f"Image paths: {image_paths}")
+                    except Exception as e:
+                        print(f"Could not open image. Error: {e}")
+                        print(f"Image paths: {image_paths}")
 
         # Adjust canvas scroll region based on new grid
         self.scrollable_frame.update_idletasks()
