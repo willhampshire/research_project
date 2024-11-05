@@ -240,8 +240,11 @@ class ImageBrowserApp:
         self.third_variable(-1, third_var)
 
     def third_variable(self, direction:int, var:str):
+        if (self.third_var_loc + direction) >= 0:
+            self.third_var_loc += direction
+        else:
+            print(f"NOT ALLOWED: self.third_var_loc + direction = {self.third_var_loc + direction}")
 
-        self.third_var_loc += direction
         self.refresh_grid()
 
         print(f"Changed {var} by {direction}. New val {self.third_var_loc}.")
