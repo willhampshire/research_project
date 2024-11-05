@@ -1,10 +1,11 @@
 import tkinter as tk
-from tkinter import filedialog
-from tkinter import ttk  # Import the ttk module for Combobox
+from tkinter import filedialog, ttk
 from pathlib import Path
 from PIL import Image, ImageTk
 import re
 import pandas as pd
+import numpy as np
+
 
 class ImageBrowserApp:
     def __init__(self, root):
@@ -21,7 +22,7 @@ class ImageBrowserApp:
         self.image_paths = []
         self.current_image_index = 0
         self.dimensions: dict = {'img': [], 't': [], 'ax': [], 'ff': []}
-        self.dimensions_df: pd.DataFrame = pd.DataFrame(self.dimensions) # init empty dataframe type safety
+        self.dimensions_df: pd.DataFrame = pd.DataFrame(self.dimensions)  # init empty dataframe type safety
 
         # Set default project directory (cwd / WS2_Grating_Eamonn / Results)
         self.default_project_dir = Path.cwd() / "WS2_Grating_Eamonn" / "Results"
@@ -37,6 +38,7 @@ class ImageBrowserApp:
         # Add frames to notebook
         self.notebook.add(self.image_frame, text='Single Image')
         self.notebook.add(self.dropdown_frame, text='Multi Image')
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
 
         # Setup Image Frame (all existing functionality goes here)
         self.setup_image_frame()
@@ -46,6 +48,97 @@ class ImageBrowserApp:
 
         # Start by loading the default project folder
         self.load_project_folder(initial=True)
+
+        self.dimensions = {'img': [], 't': [], 'ax': [], 'ff': []}
+        self.dimensions_df = pd.DataFrame(self.dimensions)
+        self.third_var_loc: int = 0
+
+        # Frame for grid display
+        self.canvas = tk.Canvas(self.dropdown_frame)
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        # Scrollbars (make sure they are packed to expand properly)
+        self.v_scrollbar = ttk.Scrollbar(self.dropdown_frame, orient="vertical", command=self.canvas.yview)
+        self.h_scrollbar = ttk.Scrollbar(self.dropdown_frame, orient="horizontal", command=self.canvas.xview)
+        self.canvas.configure(yscrollcommand=self.v_scrollbar.set, xscrollcommand=self.h_scrollbar.set)
+
+        # Pack the widgets to allow for proper scrolling and filling of space
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.v_scrollbar.pack(side="right", fill="y")
+        self.h_scrollbar.pack(side="bottom", fill="x")
+
+        # Bind canvas to frame for scrolling
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        # Callbacks for dropdown selections
+        self.compare_x_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
+        self.compare_y_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
+
+    def on_tab_change(self, event):
+        """Handle tab change events."""
+        selected_tab = self.notebook.index(self.notebook.select())
+
+        # Check if the Multi Image tab (index 1) is selected
+        if selected_tab == 1:  # Assuming Multi Image tab is at index 1
+            print("Multi Image tab selected.")
+            self.refresh_grid()  # Call any function you want when this tab is selected
+
+    def refresh_grid(self, event=None):
+        """Refresh the grid layout based on dropdown selection."""
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
+
+        assert self.determine_dimensions()
+
+        x_sel = self.compare_x_selected(event)
+        y_sel = self.compare_y_selected(event)
+
+        # Map dropdown selections to dataframe columns
+        self.selection_mapping = {
+            "Thickness": 't',
+            "Period": 'ax',
+            "Filling": 'ff'
+        }
+
+        self.x_dim, self.y_dim = [self.selection_mapping[sel] for sel in [x_sel, y_sel]]
+
+        # Ensure valid selections before proceeding
+        if self.x_dim is None or self.y_dim is None:
+            print("Invalid selection.")
+            return
+
+        # print(self.dimensions_df.head())
+
+        # Group the images by the selected X and Y dimensions
+        unique_x = sorted(self.dimensions_df[self.x_dim].unique())
+        unique_y = sorted(self.dimensions_df[self.y_dim].unique())
+
+        # print(pd.DataFrame({'x':unique_x, 'y':unique_y}))
+
+        for row_idx, x_value in enumerate(unique_x):
+            for col_idx, y_value in enumerate(unique_y):
+                # Filter images matching current X and Y values
+                image_paths = self.dimensions_df[(self.dimensions_df[self.x_dim] == x_value) &
+                                                 (self.dimensions_df[self.y_dim] == y_value)]['img'].tolist()
+                print(np.shape(image_paths))
+                if image_paths:
+                    # Display the first image that matches the criteria
+                    image = Image.open(image_paths[self.third_var_loc])
+                    image.thumbnail((250, 250))
+                    img_tk = ImageTk.PhotoImage(image)
+
+                    # Create and place the label with the image in the grid
+                    img_label = tk.Label(self.scrollable_frame, image=img_tk)
+                    img_label.image = img_tk  # Keep a reference to prevent garbage collection
+                    img_label.grid(row=row_idx, column=col_idx, padx=5, pady=5)
+
+        # Adjust canvas scroll region based on new grid
+        self.scrollable_frame.update_idletasks()
+        self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
     def setup_image_frame(self):
         """Setup the image frame with navigation buttons and image display."""
@@ -87,33 +180,59 @@ class ImageBrowserApp:
 
     # Setup Dropdown Frame
     def setup_dropdown_frame(self):
-        """Setup the dropdowns in the comparison frame."""
-        # Label for X
-        x_label = tk.Label(self.dropdown_frame, text="X:")
-        x_label.pack(side="left", padx=5)  # Add horizontal padding
+        """Setup the dropdowns and control buttons in a top row of the Multi Image frame."""
 
-        # Dropdown for Compare (GUI X)
+        # Create a new frame at the top of dropdown_frame for controls
+        controls_frame = tk.Frame(self.dropdown_frame)
+        controls_frame.pack(side="top", fill="x", pady=5)
+
+        # Label and dropdown for X dimension selection
+        x_label = tk.Label(controls_frame, text="X:")
+        x_label.pack(side="left", padx=5)
         self.compare_x_var = tk.StringVar()
-        self.compare_x_combobox = ttk.Combobox(self.dropdown_frame, textvariable=self.compare_x_var,
-                                               state="readonly")  # Set state to readonly
+        self.compare_x_combobox = ttk.Combobox(controls_frame, textvariable=self.compare_x_var, state="readonly")
         self.compare_x_combobox['values'] = ("Thickness", "Period", "Filling")
-        self.compare_x_combobox.current(0)  # Set default selection
-        self.compare_x_combobox.pack(side="left", padx=5)  # Add horizontal padding
+        self.compare_x_combobox.current(1)
+        self.compare_x_combobox.pack(side="left", padx=5)
         self.compare_x_combobox.bind("<<ComboboxSelected>>", self.compare_x_selected)
 
-        # Label for Y
-        y_label = tk.Label(self.dropdown_frame, text="Y:")
-        y_label.pack(side="left", padx=5)  # Add horizontal padding
-
-        # Dropdown for Compare (GUI Y)
+        # Label and dropdown for Y dimension selection
+        y_label = tk.Label(controls_frame, text="Y:")
+        y_label.pack(side="left", padx=5)
         self.compare_y_var = tk.StringVar()
-        self.compare_y_combobox = ttk.Combobox(self.dropdown_frame, textvariable=self.compare_y_var,
-                                               state="readonly")  # Set state to readonly
+        self.compare_y_combobox = ttk.Combobox(controls_frame, textvariable=self.compare_y_var, state="readonly")
         self.compare_y_combobox['values'] = ("Thickness", "Period", "Filling")
-        (self.compare_y_combobox
-         .current(0))  # Set default selection
-        self.compare_y_combobox.pack(side="left", padx=5)  # Add horizontal padding
+        self.compare_y_combobox.current(0)
+        self.compare_y_combobox.pack(side="left", padx=5)
         self.compare_y_combobox.bind("<<ComboboxSelected>>", self.compare_y_selected)
+
+        # Add increment and decrement buttons for the third variable
+        self.increment_button = tk.Button(controls_frame, text="+", command=self.increment_third_variable)
+        self.increment_button.pack(side="left", padx=5)
+        self.decrement_button = tk.Button(controls_frame, text="-", command=self.decrement_third_variable)
+        self.decrement_button.pack(side="left", padx=5)
+
+    def increment_third_variable(self):
+        """Increment the third variable based on the current selections."""
+        vars = [self.x_dim, self.y_dim]
+        all_vars = self.selection_mapping.keys()
+        third_var = [var for var in vars if var not in all_vars][0]
+        self.third_variable(1, third_var)
+
+    def decrement_third_variable(self):
+        """Decrement the third variable based on the current selections."""
+        vars = [self.x_dim, self.y_dim]
+        all_vars = self.selection_mapping.keys()
+        third_var = [var for var in vars if var not in all_vars][0]
+        self.third_variable(-1, third_var)
+
+    def third_variable(self, direction:int, var:str):
+
+        self.third_var_loc += direction
+        self.refresh_grid()
+
+        print(f"Changed {var} by {direction}. New val {self.third_var_loc}.")
+
 
     def load_project_folder(self, initial=False):
         """Load the project folder, with an initial directory prompt."""
@@ -197,6 +316,7 @@ class ImageBrowserApp:
         print(df.head())
 
         self.dimensions_df = df
+        return True
 
     def show_image(self, index):
         """Display image at the given index while preserving its aspect ratio."""
@@ -245,11 +365,13 @@ class ImageBrowserApp:
         """Handle selection from Compare (GUI X) dropdown."""
         selected_value = self.compare_x_var.get()
         print(f"Compare (GUI X) selected: {selected_value}")
+        return selected_value
 
     def compare_y_selected(self, event):
         """Handle selection from Compare (GUI Y) dropdown."""
         selected_value = self.compare_y_var.get()
         print(f"Compare (GUI Y) selected: {selected_value}")
+        return selected_value
 
 # Run the app
 if __name__ == "__main__":
