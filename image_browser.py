@@ -6,6 +6,8 @@ import re
 import pandas as pd
 import numpy as np
 
+# fix - things become misaligned when using navigation
+# replace incrament/decrament with dropdown, or something
 
 class ImageBrowserApp:
     def __init__(self, root):
@@ -54,18 +56,29 @@ class ImageBrowserApp:
         self.third_var_loc: int = 0
 
         # Frame for grid display
-        self.canvas = tk.Canvas(self.dropdown_frame)
+        # Create a container frame to hold the canvas and scrollbars in grid layout
+        self.scroll_container = tk.Frame(self.dropdown_frame)
+        self.scroll_container.pack(expand=True, fill="both")
+
+        # Canvas for displaying the images
+        self.canvas = tk.Canvas(self.scroll_container)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
-        # Scrollbars (make sure they are packed to expand properly)
-        self.v_scrollbar = ttk.Scrollbar(self.dropdown_frame, orient="vertical", command=self.canvas.yview)
-        self.h_scrollbar = ttk.Scrollbar(self.dropdown_frame, orient="horizontal", command=self.canvas.xview)
+        # Vertical and horizontal scrollbars attached to the canvas
+        self.v_scrollbar = ttk.Scrollbar(self.scroll_container, orient="vertical", command=self.canvas.yview)
+        self.h_scrollbar = ttk.Scrollbar(self.scroll_container, orient="horizontal", command=self.canvas.xview)
+
+        # Grid layout to position canvas and scrollbars
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.v_scrollbar.grid(row=0, column=1, sticky="ns")
+        self.h_scrollbar.grid(row=1, column=0, sticky="ew")
+
+        # Configure the scroll region of the canvas
         self.canvas.configure(yscrollcommand=self.v_scrollbar.set, xscrollcommand=self.h_scrollbar.set)
 
-        # Pack the widgets to allow for proper scrolling and filling of space
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.v_scrollbar.pack(side="right", fill="y")
-        self.h_scrollbar.pack(side="bottom", fill="x")
+        # Allow canvas and scrollbars to resize with the window
+        self.scroll_container.grid_rowconfigure(0, weight=1)
+        self.scroll_container.grid_columnconfigure(0, weight=1)
 
         # Bind canvas to frame for scrolling
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
