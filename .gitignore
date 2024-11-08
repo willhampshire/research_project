@@ -4,3 +4,5 @@ venv*/
 .venv/
 
 *S4/
+.ipynb_checkpoints/
+.idea/
