@@ -121,7 +121,7 @@ class ImageBrowserApp:
 
         # Check if the Multi Image tab (index 1) is selected
         if selected_tab == 1:  # Assuming Multi Image tab is at index 1
-            print("Multi Image tab selected.")
+            print("\n\nMulti Image tab selected.")
             self.show_popup("Please wait, lots of images can take a while to load")
             self.root.after(100, self.refresh_grid)
 
@@ -261,8 +261,8 @@ class ImageBrowserApp:
         self.compare_y_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
 
         # Dropdown for third variable selection
-        third_label = tk.Label(controls_frame, text="Third Variable:")
-        third_label.pack(side="left", padx=5)
+        self.third_label = tk.Label(controls_frame, text="Third Variable:")
+        self.third_label.pack(side="left", padx=5)
         self.third_var_var = tk.StringVar()
         self.third_var_combobox = ttk.Combobox(controls_frame, textvariable=self.third_var_var, state="readonly")
         self.third_var_combobox.pack(side="left", padx=5)
@@ -273,9 +273,10 @@ class ImageBrowserApp:
         all_vars = self.selection_mapping.values()
         all_vars_list = list(all_vars)
         for var in all_vars_list:
-            print(var, vars, all_vars_list)
+            # print(var, vars, all_vars_list)
             if str(var) not in vars:
-                print("FOUND")
+                # print("FOUND")
+                self.third_label.config(text=f"{var}:")
                 return var
         return 0
 
@@ -380,10 +381,17 @@ class ImageBrowserApp:
                 print("No match found.")
 
         df = pd.DataFrame(self.dimensions)
-        df.info()
-        print(df.head())
 
-        self.dimensions_df = df
+        duplicates = df.duplicated(subset=['t', 'ax', 'ff'], keep='first')
+        if duplicates.any():
+            print(f"Found duplicates. Dropping {duplicates.sum()} duplicate records.")
+            df = df[~duplicates]
+
+        # Update dimensions DataFrame
+        self.dimensions_df = df.reset_index(drop=True)
+
+        df.info()
+        # print(df.head())
         return True
 
     def show_image(self, index):
