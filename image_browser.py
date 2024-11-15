@@ -94,6 +94,27 @@ class ImageBrowserApp:
         self.compare_x_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
         self.compare_y_combobox.bind("<<ComboboxSelected>>", self.refresh_grid)
 
+    def show_popup(self, message):
+        self.popup = tk.Toplevel(self.root)
+        self.popup.title("Notification")
+        self.popup.geometry("300x100")
+        self.popup.resizable(False, False)
+
+        # Create a frame to center the content
+        frame = ttk.Frame(self.popup, padding="20 20 20 20")
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        # Use a Label with word wrap
+        label = ttk.Label(
+            frame,
+            text=message,
+            font=("Helvetica", 12),
+            wraplength=260,  # Adjust this value to control wrapping
+            justify=tk.CENTER  # Center-align the text
+        )
+        label.pack(expand=True, fill=tk.BOTH)
+
+
     def on_tab_change(self, event):
         """Handle tab change events."""
         selected_tab = self.notebook.index(self.notebook.select())
@@ -101,7 +122,8 @@ class ImageBrowserApp:
         # Check if the Multi Image tab (index 1) is selected
         if selected_tab == 1:  # Assuming Multi Image tab is at index 1
             print("Multi Image tab selected.")
-            self.refresh_grid()  # Call any function you want when this tab is selected
+            self.show_popup("Please wait, lots of images can take a while to load")
+            self.root.after(100, self.refresh_grid)
 
     def refresh_grid(self, event=None, third_var_call=0):
         """Refresh the grid layout based on dropdown selection."""
