@@ -23,7 +23,7 @@ N=75
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si'
 
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
@@ -37,15 +37,17 @@ savepath.mkdir(exist_ok=True, parents=True)
 
 
 sims = sorted(os.listdir(results_top_dir))
-
-sims.remove('summary.json')
+if 'summary.json' in sims:
+    sims.remove('summary.json')
 print(len(sims))
 
-sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75')]
+# sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=20.0nm Λ=550nm FF=0.55 N=75')]
 
 def fit_simulation(results_dir):
-
-    files = sorted(os.listdir(results_dir))
+    try:
+        files = sorted(os.listdir(results_dir))
+    except:
+        return 0
     file_R = results_dir / files[4]
     file_R_sub = results_dir / files[5]
     print(file_R)
@@ -81,7 +83,7 @@ def fit_simulation(results_dir):
     # cbar =fig.colorbar(pcm,location='right')
     # cbar.set_label('Reflectivity contrast')
     # plt.minorticks_on()
-
+    # plt.show()
 
 
 
@@ -136,8 +138,13 @@ def fit_simulation(results_dir):
         # Create a mask to exclude pixels within 5% of the central position
         mask = (np.arange(N) < central_position - exclude_range) | (np.arange(N) > central_position + exclude_range)
 
-        # Apply the mask to the row
-        filtered_row = row[mask]
+        try:
+            # Apply the mask to the row
+            filtered_row = row[mask]
+        except IndexError:
+            print("WRONG N - DEBUG")
+            time.sleep(5)
+            return 0
 
         # Compute the value for this row and append to the result
         if len(filtered_row) > 0:  # Make sure there are still data points after masking
@@ -153,12 +160,13 @@ def fit_simulation(results_dir):
     pd_line_y_max = pd.Series(line_y_max)
 
     # Apply a 3-point moving average to smooth the data
-    pd_line_y_max_plottinged = pd_line_y_max.rolling(window=6, center=True).mean()
+    series_ymax_mavg = pd_line_y_max.rolling(window=6, center=True).mean()
 
 
     # Use the Series index as x values
-    y = pd_line_y_max_plottinged
-    x = pd_line_y_max_plottinged.index
+    y = series_ymax_mavg
+    x = series_ymax_mavg.index
+    y = y.fillna(0)
 
     y_min, y_max = y.min(), y.max()
     # Define thresholds
@@ -182,8 +190,9 @@ def fit_simulation(results_dir):
 
     print(f"TROUGHS: {troughs}")
     troughs = np.array([int(t) for t in troughs if y[t] <= trough_threshold])  # Keep only valid troughs
-    troughs = np.append(troughs, N-1)
+    troughs = np.append(troughs, N-2)
     print(f"TROUGHS: {troughs}")
+    # print(y[-1:])
 
     print(type(troughs), type(peaks))
     # peaks_df = pd.Series(peaks)
@@ -228,22 +237,22 @@ def fit_simulation(results_dir):
 
 
     # Step 5: Plot the results
-    # plt.figure(figsize=(12, 6))
-    # plt.plot(x, y, label='Data', color='lightgray')
-    # plt.scatter(x[peaks], y[peaks], color='red', label='Maxima')
-    # plt.scatter(x[minima_indices], y[minima_indices], color='blue', label='Minima', zorder=5)
-    # plt.scatter(x[max_peak[0]], y[max_peak[0]], color='green', label='Peak', s=100, zorder=10)
-    # plt.scatter([x[min_troughs[0]], x[min_troughs[1]]], [y[min_troughs[0]], y[min_troughs[1]]], color='purple', label='Neighbouring troughs', s=100, zorder=10)
-    # plt.axhline(y=peak_threshold)
-    # plt.axhline(y=trough_threshold)
-    # plt.title('Identifying Minima near the Tallest Distinct Peak')
-    # plt.xlabel('x')
-    # plt.ylabel('y')
-    # plt.legend()
-    # plt.grid()
-    #
-    # plt.savefig(savepath / 'peaks.png', dpi=150)
-    # plt.show()
+    plt.figure(figsize=(12, 6))
+    plt.plot(x, y, label='Data', color='lightgray')
+    plt.scatter(x[peaks], y[peaks], color='red', label='Maxima')
+    plt.scatter(x[minima_indices], y[minima_indices], color='blue', label='Minima', zorder=5)
+    plt.scatter(x[max_peak[0]], y[max_peak[0]], color='green', label='Peak', s=100, zorder=10)
+    plt.scatter([x[min_troughs[0]], x[min_troughs[1]]], [y[min_troughs[0]], y[min_troughs[1]]], color='purple', label='Neighbouring troughs', s=100, zorder=10)
+    plt.axhline(y=peak_threshold)
+    plt.axhline(y=trough_threshold)
+    plt.title('Identifying Minima near the Tallest Distinct Peak')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.legend()
+    plt.grid()
+
+    plt.savefig(savepath / 'peaks.png', dpi=150)
+    plt.show()
 
 
 
@@ -536,15 +545,15 @@ def fit_simulation(results_dir):
 
 
 
-    for i in [0,1]:
-        try:
-            plt.axhline(y=vertices[i], color='m', linestyle='--', label='Vertex')
-
-            plt.axhline(y=asyms[i], color='k', linestyle=':', label='Asymptote', linewidth=3)
-
-            plt.plot(k_scan_line, fitted_to_graph(fits[i]), 'r-', linewidth=2, label='Fit')
-        except:
-            continue
+    # for i in [0,1]:
+    #     try:
+    #         plt.axhline(y=vertices[i], color='m', linestyle='--', label='Vertex')
+    #
+    #         plt.axhline(y=asyms[i], color='k', linestyle=':', label='Asymptote', linewidth=3)
+    #
+    #         plt.plot(k_scan_line, fitted_to_graph(fits[i]), 'r-', linewidth=2, label='Fit')
+    #     except:
+    #         continue
 
 
 
