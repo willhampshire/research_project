@@ -19,7 +19,7 @@ from chars import greek, phys
 
 
 
-N=75
+# N=75
 
 cwd = Path(os.getcwd())
 
@@ -51,6 +51,12 @@ def fit_simulation(results_dir):
     file_R = results_dir / files[4]
     file_R_sub = results_dir / files[5]
     print(file_R)
+
+    try:
+        N_str = str(results_dir.parents[0]).rsplit('N=')[1]
+        N = int(N_str)
+    except Exception as e:
+        print(f"No N present in file name - {e}")
 
     R = pd.read_csv(file_R, index_col=0)
     Rsub = pd.read_csv(file_R_sub, index_col=0)
@@ -171,7 +177,7 @@ def fit_simulation(results_dir):
     y_min, y_max = y.min(), y.max()
     # Define thresholds
     trough_threshold = y_min + 0.4 * (y_max - y_min)  # Troughs must be below halfway
-    peak_threshold = y_min + 0.45 * (y_max - y_min)   # Peaks must be above 80%
+    peak_threshold = y_min + 0.4 * (y_max - y_min)   # Peaks must be above
 
     # Filter peaks and troughs based on thresholds
     peaks, _ = find_peaks(y)
@@ -201,10 +207,10 @@ def fit_simulation(results_dir):
     # print(pt_df)
 
     minima_indices = troughs
-    min_peak_trough_diff = 0.6
+    min_peak_trough_diff = 0.4
 
-    max_peak = None # [loc, comparable diff]
-    min_troughs = None # [loc1, loc2]
+    max_peak = {} # [loc, comparable diff]
+    # min_troughs = [] # [loc1, loc2]
 
     for _,peak in enumerate(peaks):
         before_trough = troughs[troughs < peak].max() if (troughs < peak).any() else None
@@ -218,21 +224,40 @@ def fit_simulation(results_dir):
         diff1, diff2 = y[peak] - y[before_trough], y[peak] - y[after_trough]
         diff_min = np.min([diff1, diff2]) # find min proximity in y to trough
 
-        if max_peak == None or max_peak[1] < diff_min:
-            max_peak = [peak,diff_min]
-            min_troughs = [before_trough, after_trough]
+        # if max_peak == None or max_peak[1] < diff_min:
+        # max_peak.append([peak,diff_min])
+        # min_troughs.append([before_trough, after_trough])
+
+        max_peak[f'{peak}'] = [diff_min, before_trough, after_trough]
 
         print(f"Peak at {peak} - before={before_trough}, after={after_trough}, diff {diff_min}")
 
-    try:
-        print(f"Found peak at idx {max_peak[0]}")
-    except:
-        print(f"NO MAX PEAK INDEX; {max_peak}")
+    if len(max_peak) == 0:
         return 0
 
-    if max_peak[1] < (y_max - y_min)*0.4:
-        print("No definative modes found using max of each row, looking at peaks/troughs.")
+    max_peak_sorted = dict(sorted(max_peak.items(), key=lambda item: item[1][0], reverse=True))
+
+    peak_indices_sorted = list(max_peak_sorted.keys())
+    compare_troughs = []
+    # remove if different peak of same troughs
+    for i in range (0, len(peak_indices_sorted)):
+        locs = max_peak_sorted[peak_indices_sorted[i]][1:]
+        if locs in compare_troughs:
+            del max_peak_sorted[peak_indices_sorted[i]]
+        compare_troughs.append(max_peak_sorted[peak_indices_sorted[i]])
+
+    try:
+        print(f"Found peaks at {max_peak_sorted.keys()}")
+    except:
+        print(f"Error with peaks, {max_peak_sorted}")
         return 0
+
+    for i in range(0, len(peak_indices_sorted)):
+        diff = max_peak_sorted[peak_indices_sorted[i]][0]
+        if diff < (y_max - y_min)*min_peak_trough_diff:
+            print("No definative modes found using max of each row, looking at peaks/troughs.")
+            return 0
+
 
 
 
@@ -241,8 +266,12 @@ def fit_simulation(results_dir):
     plt.plot(x, y, label='Data', color='lightgray')
     plt.scatter(x[peaks], y[peaks], color='red', label='Maxima')
     plt.scatter(x[minima_indices], y[minima_indices], color='blue', label='Minima', zorder=5)
-    plt.scatter(x[max_peak[0]], y[max_peak[0]], color='green', label='Peak', s=100, zorder=10)
-    plt.scatter([x[min_troughs[0]], x[min_troughs[1]]], [y[min_troughs[0]], y[min_troughs[1]]], color='purple', label='Neighbouring troughs', s=100, zorder=10)
+
+    for p in peak_indices_sorted:
+        p_ = int(p)
+        plt.scatter(x[p_], y[p_], color='green', label='Peak', s=100, zorder=10)
+        plt.scatter([x[max_peak_sorted[p][1]], x[max_peak_sorted[p][2]]], [y[max_peak_sorted[p][1]], y[max_peak_sorted[p][2]]], color='purple', label='Neighbouring troughs', s=100, zorder=10)
+
     plt.axhline(y=peak_threshold)
     plt.axhline(y=trough_threshold)
     plt.title('Identifying Minima near the Tallest Distinct Peak')
@@ -271,7 +300,7 @@ def fit_simulation(results_dir):
         :param sign: u or n shape (redundant)
         :return: g(x) func result
         """
-        global N
+        nonlocal N
         sign = -1 * c
         xbM = ((x - N/2) ** 2) / M
         f_x = sign*np.sqrt(np.abs( (F + xbM) ))
@@ -291,14 +320,14 @@ def fit_simulation(results_dir):
         :param sign: u or n shape (redundant)
         :return: g(x) func result
         """
-        global N
+        nonlocal N
         sign = 1 * c
         xbM = ((x - N/2) ** 2) / M
         f_x = sign*np.sqrt(np.abs( (F + xbM) ))
         g_x = a + ( f_x / (V*( 1 + (np.abs(f_x) / B) )) )
         return g_x * L
 
-    hyperbolas = [hyperbola_asymptotic_u, hyperbola_asymptotic_n]
+    hyperbolas = [hyperbola_asymptotic_u, hyperbola_asymptotic_n, hyperbola_asymptotic_u, hyperbola_asymptotic_n]
 
     def graph_to_fitted(array: list | float, N: int = N) -> list | float:
         """
@@ -443,40 +472,77 @@ def fit_simulation(results_dir):
 
     # y_min, y_max = min_troughs[1], None
     # y_min, y_max = min_troughs[0], min_troughs[1]
-    if len(min_troughs) == 2:
-        min_troughs.append(None)
-        print(min_troughs)
+    # if len(min_troughs) == 2:
+    #     min_troughs.append(None)
+    #     print(min_troughs)
 
-    results = []
+    results = {}
     r2_threshold = 0.6
 
     # loop - 0 upper, 1 lower
-    for i in range(0, 2):
+    # sign - upper -1, lower 1
+    for i in [0,1,2,3]:
         # print(i)
-        if (i==1) and (1 not in results):
-            print("UPPER MODE NOT FITTED, LOOKING FOR LOWER MODE INSTEAD")
-            y_min, y_max = min_troughs[0], min_troughs[1]
-        else:
-            y_min, y_max = min_troughs[i], min_troughs[i+1]
-        sign = 2*i - 1 # upper -1, lower 1
+        trough_idxs = [max_peak_sorted[key][1:] for key in max_peak_sorted.keys()]
+        y_min_1 = trough_idxs[0][0]
+        y_max_1 = trough_idxs[0][1]
+
+        if i==0:
+            print("MODE 0")
+            try:
+                result = process_fitting(i, y_min_1, y_max_1, -1)
+            except ValueError:
+                result = 0
+            finally:
+                results[str(i)] = result
+
+        elif (i==1) and (results['0']==0):
+            print("MODE 1 - UPPER MODE NOT FITTED, LOOKING FOR LOWER MODE INSTEAD")
+            try:
+                result = process_fitting(i, y_min_1, y_max_1, 1)
+            except ValueError:
+                result = 0
+            finally:
+                results[str(i)] = result
 
         try:
-            result = process_fitting(i, y_min, y_max, sign)
-        except ValueError:
-            result = 0
+            y_min_2 = trough_idxs[1][0]
+            y_max_2 = trough_idxs[1][1]
+        except:
+            continue
 
-        if result == 1:
-            results.append(result)
+        if (i==2) and (results['0']==0):
+            print("MODE 2")
+            try:
+                result = process_fitting(i, y_min_2, y_max_2, -1)
+            except ValueError:
+                result = 0
+            finally:
+                results[str(i)] = result
 
-    if len(results) == 2:
-        print("2 modes present and well fitted")
+        elif (i==3) and (results['0']==1):
+            print("MODE 3")
+            try:
+                result = process_fitting(i, y_min_2, y_max_2, 1)
+            except ValueError:
+                result = 0
+            finally:
+                results[str(i)] = result
+
+        print(f"******** RESULT ********\n{results}")
+
+
+
+
+    if len(results) >= 2:
+        print(f"{len(results)} modes present and well fitted")
     if len(results) == 0:
         print("No modes fitted")
         # print(fitting_data)
         fitting_data = {}
         return 0
     else:
-        print(f"2 modes NOT present - {len(results)} modes fitted")
+        print(f"Modes NOT present - {len(results)} modes fitted")
 
 
     print(fitting_data)
@@ -497,14 +563,15 @@ def fit_simulation(results_dir):
 
 
 
-    k_scan_line = np.linspace(-1/kmax, 1/kmax, 300)
+    k_scan_line = np.linspace(-kmax, kmax, 300)
     x_graphing = np.linspace(0, N+1, 300)
-    k_scan = np.linspace(-1/kmax, 1/kmax, N)
+    k_scan = np.linspace(-kmax, kmax, N)
 
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
     pcm = axs.pcolor(k_scan,lbda,signalR,cmap='viridis',clim=(0,1))
     m1 = r'{-1}'
-    axs.set(xlabel=f'k$_x^{m1}$ [{greek.mu}m]',xlim=(-1/kmax,1/kmax),ylim=(lbda_max, lbda_min), ylabel='Photon Energy [eV]',title='Upper and lower modes, vertices, asymptotes')
+    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(lbda_max, lbda_min), ylabel='Photon Energy [eV]',
+            title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.name}')
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')
@@ -514,7 +581,7 @@ def fit_simulation(results_dir):
     fits = []
     vertices = []
     asyms = []
-    for i in [0,1]:
+    for i in [0,1,2,3]:
         try:
             popt = fitting_data[f'{i}']['popt']
             fit = hyperbolas[i](x_graphing, *popt)
