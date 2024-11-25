@@ -23,7 +23,7 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si'
 
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
@@ -459,11 +459,11 @@ def fit_simulation(results_dir):
         r2 = 1 - (ss_residual / ss_total)
         print(f"\n\nRMSE: {rmse}, R^2: {r2}")
 
-        fitting_data[str(iteration)] = {'R2':float(r2), 'popt':popt_cleaned.tolist()}
-
+        r2_threshold = 0.6
         print(f"EVALUATING {abs(r2):.4f} vs {r2_threshold:.2f}")
         if float(abs(r2)) > float(r2_threshold):
             print("WELL FITTED")
+            fitting_data[str(iteration)] = {'R2': float(r2), 'popt': popt_cleaned.tolist()}
             return 1
         else:
             return 0
@@ -477,7 +477,7 @@ def fit_simulation(results_dir):
     #     print(min_troughs)
 
     results = {}
-    r2_threshold = 0.6
+
 
     # loop - 0 upper, 1 lower
     # sign - upper -1, lower 1
@@ -503,55 +503,55 @@ def fit_simulation(results_dir):
             print("MODE 0")
             try:
                 result = process_fitting(i, y_min_1, y_max_1, -1)
+                results[str(i)] = result
             except ValueError:
                 result = 0
-            finally:
-                results[str(i)] = result
+
 
         elif (i==1) and (results['0']==0):
             print("MODE 1 - UPPER MODE NOT FITTED, LOOKING FOR LOWER MODE INSTEAD")
             try:
                 result = process_fitting(i, y_min_1, y_max_1, 1)
+                results[str(i)] = result
             except ValueError:
                 result = 0
-            finally:
-                results[str(i)] = result
+
 
         elif (i==2) and (results['0']==0) and (not fit_remainder):
             print("MODE 2")
             try:
                 result = process_fitting(i, y_min_2, y_max_2, -1)
+                results[str(i)] = result
             except ValueError:
                 result = 0
-            finally:
-                results[str(i)] = result
+
 
         elif (i==3) and (results['0']==1) and (not fit_remainder):
             print("MODE 3")
             try:
                 result = process_fitting(i, y_min_2, y_max_2, 1)
+                results[str(i)] = result
             except ValueError:
                 result = 0
-            finally:
-                results[str(i)] = result
+
 
         elif (i == 4) and (fit_remainder):
             print("MODE 4")
             try:
                 result = process_fitting(i, y_min_3, y_max_3, -1)
+                results[str(i)] = result
             except ValueError:
                 result = 0
-            finally:
-                results[str(i)] = result
+
 
         elif (i == 5) and (fit_remainder):
             print("MODE 5")
             try:
                 result = process_fitting(i, y_min_3, y_max_3, 1)
+                results[str(i)] = result
             except ValueError:
                 result = 0
-            finally:
-                results[str(i)] = result
+
 
 
 
@@ -597,7 +597,7 @@ def fit_simulation(results_dir):
     pcm = axs.pcolor(k_scan,lbda,signalR,cmap='viridis',clim=(0,1))
     m1 = r'{-1}'
     axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(lbda_max, lbda_min), ylabel='Photon Energy [eV]',
-            title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.name}')
+            title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.parents[0]}')
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')
