@@ -23,7 +23,7 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4'
 
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
@@ -176,7 +176,7 @@ def fit_simulation(results_dir):
 
     y_min, y_max = y.min(), y.max()
     # Define thresholds
-    trough_threshold = y_min + 0.4 * (y_max - y_min)  # Troughs must be below halfway
+    trough_threshold = y_min + 0.4 * (y_max - y_min)  # Troughs must be below
     peak_threshold = y_min + 0.4 * (y_max - y_min)   # Peaks must be above
 
     # Filter peaks and troughs based on thresholds
@@ -327,7 +327,7 @@ def fit_simulation(results_dir):
         g_x = a + ( f_x / (V*( 1 + (np.abs(f_x) / B) )) )
         return g_x * L
 
-    hyperbolas = [hyperbola_asymptotic_u, hyperbola_asymptotic_n, hyperbola_asymptotic_u, hyperbola_asymptotic_n]
+    hyperbolas = [hyperbola_asymptotic_u, hyperbola_asymptotic_n]
 
     def graph_to_fitted(array: list | float, N: int = N) -> list | float:
         """
@@ -344,7 +344,7 @@ def fit_simulation(results_dir):
     fitting_data = {}
 
     def process_fitting(iteration, y_min, y_max, sign):
-        hyperbola_asymptotic = hyperbolas[iteration] # decide u or n shape
+        hyperbola_asymptotic = hyperbolas[int(iteration%2)] # decide u or n shape
 
         # Create a heatmap (visualization)
         # plt.figure(figsize=(10, 6), dpi=80)
@@ -481,11 +481,23 @@ def fit_simulation(results_dir):
 
     # loop - 0 upper, 1 lower
     # sign - upper -1, lower 1
-    for i in [0,1,2,3]:
+    for i in [0,1,2,3,4,5]:
         # print(i)
         trough_idxs = [max_peak_sorted[key][1:] for key in max_peak_sorted.keys()]
         y_min_1 = trough_idxs[0][0]
         y_max_1 = trough_idxs[0][1]
+
+        fit_remainder = False
+        try:
+            y_min_2 = trough_idxs[1][0]
+            y_max_2 = trough_idxs[1][1]
+        except:
+            y_min_3 = y_max_1
+            y_max_3 = int(N * 0.95)
+
+            if (y_max_3 - y_min_3) <= N * 0.1:
+                continue
+            fit_remainder = True
 
         if i==0:
             print("MODE 0")
@@ -505,13 +517,7 @@ def fit_simulation(results_dir):
             finally:
                 results[str(i)] = result
 
-        try:
-            y_min_2 = trough_idxs[1][0]
-            y_max_2 = trough_idxs[1][1]
-        except:
-            continue
-
-        if (i==2) and (results['0']==0):
+        elif (i==2) and (results['0']==0) and (not fit_remainder):
             print("MODE 2")
             try:
                 result = process_fitting(i, y_min_2, y_max_2, -1)
@@ -520,7 +526,7 @@ def fit_simulation(results_dir):
             finally:
                 results[str(i)] = result
 
-        elif (i==3) and (results['0']==1):
+        elif (i==3) and (results['0']==1) and (not fit_remainder):
             print("MODE 3")
             try:
                 result = process_fitting(i, y_min_2, y_max_2, 1)
@@ -528,6 +534,26 @@ def fit_simulation(results_dir):
                 result = 0
             finally:
                 results[str(i)] = result
+
+        elif (i == 4) and (fit_remainder):
+            print("MODE 4")
+            try:
+                result = process_fitting(i, y_min_3, y_max_3, -1)
+            except ValueError:
+                result = 0
+            finally:
+                results[str(i)] = result
+
+        elif (i == 5) and (fit_remainder):
+            print("MODE 5")
+            try:
+                result = process_fitting(i, y_min_3, y_max_3, 1)
+            except ValueError:
+                result = 0
+            finally:
+                results[str(i)] = result
+
+
 
         print(f"******** RESULT ********\n{results}")
 
@@ -581,15 +607,15 @@ def fit_simulation(results_dir):
     fits = []
     vertices = []
     asyms = []
-    for i in [0,1,2,3]:
+    for i in [0,1,2,3,4,5]:
         try:
             popt = fitting_data[f'{i}']['popt']
-            fit = hyperbolas[i](x_graphing, *popt)
+            fit = hyperbolas[i%2](x_graphing, *popt)
             plt.plot(k_scan_line, fitted_to_graph(fit), 'r-', linewidth=2, label='Fit')
             fits.append(fit)
 
-            vertex = fitted_to_graph(hyperbolas[i](N/2, *popt))
-            asym = fitted_to_graph(hyperbolas[i](1e9, *popt))
+            vertex = fitted_to_graph(hyperbolas[i%2](N/2, *popt))
+            asym = fitted_to_graph(hyperbolas[i%2](1e9, *popt))
 
             vertices.append(vertex)
             asyms.append(asym)
