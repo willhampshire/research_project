@@ -41,7 +41,7 @@ if 'summary.json' in sims:
     sims.remove('summary.json')
 print(len(sims))
 
-sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5' / 't=80.0nm Λ=600nm FF=0.82 N=75')]
+# sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5' / 't=80.0nm Λ=600nm FF=0.78 N=75')]
 
 def fit_simulation(results_dir):
     try:
@@ -176,6 +176,7 @@ def fit_simulation(results_dir):
 
     y_min, y_max = y.min(), y.max()
     # Define thresholds
+    min_peak_trough_diff = 0.4
     trough_threshold = y_min + 0.4 * (y_max - y_min)  # Troughs must be below
     peak_threshold = y_min + 0.4 * (y_max - y_min)   # Peaks must be above
 
@@ -207,7 +208,7 @@ def fit_simulation(results_dir):
     # print(pt_df)
 
     minima_indices = troughs
-    min_peak_trough_diff = 0.4
+
 
     max_peak = {} # [loc, comparable diff]
     # min_troughs = [] # [loc1, loc2]
@@ -397,7 +398,7 @@ def fit_simulation(results_dir):
             y_data = y_data[mask]
 
         print(np.shape(y_data), np.shape(x_data))
-        if float(len(x_data)) < N*0.7:
+        if float(len(x_data)) < N*0.6:
             print("Not enough data. Skipping.")
             return 0
 
@@ -432,11 +433,12 @@ def fit_simulation(results_dir):
         # print(f"PCOV cleaned: {pcov_cleaned}")
 
         # Overlay the data and the fitted hyperbolic curve on the heatmap
+
         # plt.plot(x_data, y_data, 'bx', markersize=6, label='Weighted Avg')
         # plt.plot(x_data_cleaned, y_data_cleaned, 'bo', markersize=6, label='Weighted Avg cleaned')
         # # plt.plot(x_plotting, y_fit, 'r--', linewidth=2, label='Initial Fit')
         # plt.plot(x_plotting, y_fit_cleaned, 'r-', linewidth=2, label='Refitted Hyperbolic Curve')
-
+        #
         # plt.xlabel('k_x')
         # plt.ylabel('eV')
         # if iteration == 0:
@@ -452,7 +454,7 @@ def fit_simulation(results_dir):
         print(f"Fitted parameters (cleaned hyperbolic):\na = {a_cleaned:.4f}, L = {L_cleaned:.4f}, M = {M_cleaned:.4f}, F = {F_cleaned:.4f}, B = {B_cleaned:.4f}, V = {V_cleaned:.4f}")
 
 
-        residuals = y_data - hyperbola_asymptotic(x_data, *popt_cleaned)
+        residuals = y_data_cleaned - hyperbola_asymptotic(x_data_cleaned, *popt_cleaned)
         rmse = np.sqrt(np.mean(residuals**2))
         ss_total = np.sum((y_data - np.mean(y_data))**2)
         ss_residual = np.sum(residuals**2)
@@ -484,6 +486,12 @@ def fit_simulation(results_dir):
     for i in [0,1,2,3,4,5]:
         # print(i)
         trough_idxs = [max_peak_sorted[key][1:] for key in max_peak_sorted.keys()]
+        print(trough_idxs)
+        if len(trough_idxs) > 2:
+            trough_idxs = [t for t in trough_idxs if t[1] <= 70]
+
+        print(trough_idxs)
+
         y_min_1 = trough_idxs[0][0]
         y_max_1 = trough_idxs[0][1]
 
@@ -560,15 +568,13 @@ def fit_simulation(results_dir):
 
 
 
-    if len(results) >= 2:
-        print(f"{len(results)} modes present and well fitted")
     if len(results) == 0:
         print("No modes fitted")
         # print(fitting_data)
         fitting_data = {}
         return 0
     else:
-        print(f"Modes NOT present - {len(results)} modes fitted")
+        print(f"{len(results)} modes attempted to be fitted in results dict")
 
 
     print(fitting_data)
