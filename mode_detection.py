@@ -23,7 +23,7 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5'
 
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
@@ -41,7 +41,7 @@ if 'summary.json' in sims:
     sims.remove('summary.json')
 print(len(sims))
 
-# sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=20.0nm Λ=550nm FF=0.55 N=75')]
+sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5' / 't=80.0nm Λ=600nm FF=0.82 N=75')]
 
 def fit_simulation(results_dir):
     try:
@@ -597,7 +597,7 @@ def fit_simulation(results_dir):
     pcm = axs.pcolor(k_scan,lbda,signalR,cmap='viridis',clim=(0,1))
     m1 = r'{-1}'
     axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(lbda_max, lbda_min), ylabel='Photon Energy [eV]',
-            title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.parents[0]}')
+            title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.parents[0].name}')
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')

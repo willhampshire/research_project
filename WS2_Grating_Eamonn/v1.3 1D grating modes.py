@@ -534,7 +534,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
     plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
-    plt.show()
+    # plt.show()
 
 
     # print("*** SUMMARY ***")
@@ -560,9 +560,13 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = range_in(0.3, 0.6, 0.05)
-    thicknesses = range_in(0.02, 0.1, (10/1000))
-    filling = range_in(0.5, 0.85, 0.05)
+    # t 20-90nm 0.02-0.09um
+    # ff >0.7
+    # ax 350-600nm 0.3-0.6nm step 20nm
+
+    periods = range_in(0.3, 0.6, 0.02)
+    thicknesses = range_in(0.02, 0.09, 0.01)
+    filling = range_in(0.7, 0.9, 0.04)
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
@@ -574,7 +578,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='4')
+                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='5')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm
