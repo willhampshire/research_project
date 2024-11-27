@@ -286,3 +286,5 @@ cbar.set_label('Reflectivity contrast')
 # # axs.plot(kx,Eup2,'r--',kx,Elo2,'r--')
 # cbar =fig.colorbar(pcm,location='right')
 # cbar.set_label('Absorption') 
+
+plt.show()
