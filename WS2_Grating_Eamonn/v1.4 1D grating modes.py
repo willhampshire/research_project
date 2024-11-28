@@ -41,7 +41,7 @@ class Pattern:
     alpha instigates a 2-element pattern list using itself and width_hole
     """
     def __init__(self, period:float, filling:float, size:List[float], lattice:List[List[float]] | None = None,
-                 alpha:float=None ,form:int=1, pos:List[float]=[0,0], angle:float=0):
+                 alpha: float|None = None ,form:int=1, pos:List[float]=[0,0], angle:float=0):
         self.period = period
         self.filling = filling
         self.width:float = self.period * self.filling
@@ -269,7 +269,9 @@ class Waveguide:
 
             lattice = lattice_vectors
 
+            # if alpha specified, do double period and use pertubation of alpha
             if layer.pattern.alpha != None:
+                assert isinstance(layer.pattern.alpha, float)
                 pos = [w_h*(1+alpha)/2,0]
                 size = [w_h*(1+alpha),0]
                 pattern_temp.append([i + 1, i, form, pos, size, angle])
@@ -333,7 +335,7 @@ def time_it(func):
 
 # main function
 @time_it
-def run_simulation(N:int, period:float, thickness:float, filling:float,
+def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:float|None=None,
                    experiment_suf:str=None):
     """
     Main sim function.
@@ -349,16 +351,20 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
 
     lbda = np.linspace(lbda_min/1000,lbda_max/1000,N)
     # E=1.23987/lbda
-    # Wave_vector
-    # N_k=701
-    N_k=N
+
     # k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
     kmax=5
-    k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
+    k_scan=np.linspace(-kmax,kmax,N) #mu-1
+
     ky=0.000 #mu-1
-    N_ord=7 #Choice of the number of orders taken into account during simulation, recommendation: 7 for 1D, 50 for 2D
+
     polar=2 #Polarization of incident wave: 1-> x, 2-> y, 3->L, 4->R, 5->s, 6->p, 7->45°, 8->-45°, 0-> All 6 polarizations (H,V,D,A,L,R) for the Stoke parameter
 
+    # demorized gratings - 15, otherwise - 7 (regular periodic 1D simulation)
+    if alpha != None:
+        N_ord = 15
+    else:
+        N_ord = 7
 
     # Materials definition, 2 ways:
     # 1 - Location for a dispersive material;
@@ -420,7 +426,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
     SiO2_layer = SiO2.make_layer(0.29)
 
     # pattern the grating layer
-    WS2_layer.pattern = Pattern(ax, FF, size=[ax-w,0], lattice=[u,v], alpha=0.07)
+    WS2_layer.pattern = Pattern(ax, FF, size=[ax-w,0], lattice=[u,v], alpha=alpha)
 
     swg = Waveguide() # make Waveguide object
     swg.write_material_order([air,WS2,SiO2,Si]) # simply the materials list, but instead with Material objects
@@ -463,15 +469,15 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
 
         ## Run S4 simulation for each wavelength
 
-        # print(f"--------------\nDEBUG\n{lbda,material_RCWA, layer_RCWA, pattern_RCWA,u,v,phi,theta,polar,N_ord}")
+        # print(f"--------------\nDEBUG\n{lbda,material_RCWA, layer_RCWA, pattern_RCWA[0],pattern_RCWA[1][0], pattern_RCWA[1][1],phi,theta,polar,N_ord}")
 
         lbda, R[:,i_k], T[:,i_k], A[:,i_k] = RCWA_spectrum(lbda,
                                                            material_RCWA, layer_RCWA, pattern_RCWA[0],
-                                                           pattern_RCWA[1][0], pattern_RCWA[1][0],
+                                                           pattern_RCWA[1][0], pattern_RCWA[1][1],
                                                            phi,theta,polar,N_ord)
         lbda, R_sub[:,i_k], T_sub[:,i_k], A_sub[:,i_k] = RCWA_spectrum(lbda,
                                                                        material_RCWA_sub, layer_RCWA_sub, pattern_RCWA_sub[0],
-                                                                       pattern_RCWA_sub[1][0],pattern_RCWA_sub[1][0],
+                                                                       pattern_RCWA_sub[1][0],pattern_RCWA_sub[1][1],
                                                                        phi,theta,polar,N_ord)
         # lbda,R_sub[:,i_k],T_sub[:,i_k],A_sub[:,i_k]=RCWA_spectrum(lbda,material,layer,pattern,u,v,phi,theta,8,N_ord)
         # E=1.23984/lbda
@@ -499,10 +505,11 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
     # legacy save name string
     #saving_name='t'+str("%.0f" % np.multiply(1e3,t))+'nm a='+str("%.0f" % np.multiply(1e3,ax))+'nm FF='+str("%.2f" % FF)
 
-    # change t=layer.thickness variable when running other sims
+    # change t=layer.thickness variable when naming other sims
     details = (f"t={WS2_layer.thickness*1e3:.1f}nm "
                f"{greek.Lambda}={ax*1e3:.0f}nm "
                f"FF={FF:.2f}")
+
 
     project_name = f'{swg.get_summary_name()} {experiment_suf}'
     # project_name = 'feature testing'
@@ -562,6 +569,9 @@ def run_simulation(N:int, period:float, thickness:float, filling:float,
 
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
+    if alpha != None:
+        title_name += f" {greek.alpha}={alpha:.3f}"
+
     plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
     plt.show()
 
@@ -589,9 +599,14 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = range_in(0.3, 0.6, 0.05)
-    thicknesses = range_in(0.02, 0.1, (10/1000))
-    filling = range_in(0.5, 0.85, 0.05)
+    # periods = [0.42]
+    # thicknesses = [0.035]
+    # filling = [0.73]
+
+    periods = range_in(0.3, 0.6, 0.02)
+    thicknesses = range_in(0.02, 0.09, 0.01)
+    filling = range_in(0.7, 0.9, 0.04)
+
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
@@ -603,7 +618,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='testasymmetry')
+                    run_simulation(N=100, period=ax, thickness=t, filling=ff, experiment_suf='6 (alpha 0.6)')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm

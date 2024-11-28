@@ -115,14 +115,15 @@ lbda_max=1240/1.2
 # lbda_min=1240/2.2
 # lbda_max=1240/1.25
          
-lbda = np.linspace(lbda_min/1000,lbda_max/1000,N_lambda) 
+lbda = np.linspace(lbda_min/1000,lbda_max/1000,N_lambda)
 E=1.23987/lbda
 # %% Wave_vector
 # N_k=701
 N_k=N
-k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
+
 ky=0.000 #mu-1
-kmax=5.1
+kmax=5
+k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
 # %% Common parameters
 N_ord=15 #Choice of the number of orders taken into account during simulation, recommendation: 7 for 1D, 50 for 2D
 polar=2 #Polarization of incident wave: 1-> x, 2-> y, 3->L, 4->R, 5->s, 6->p, 7->45°, 8->-45°, 0-> All 6 polarizations (H,V,D,A,L,R) for the Stoke parameter
@@ -199,6 +200,8 @@ for i_k in range(0,k_scan.size):
     remove_lambda=(abs(theta.imag)>0).nonzero()
     theta[remove_lambda]=0 
     ## Run S4 simulation for each wavelength
+    # print("DEBUG")
+    # print(lbda,material,layer,pattern,u,v,phi,theta,polar,N_ord)
     lbda,R[:,i_k],T[:,i_k],A[:,i_k]=RCWA_spectrum(lbda,material,layer,pattern,u,v,phi,theta,polar,N_ord)
     lbda,R_sub[:,i_k],T_sub[:,i_k],A_sub[:,i_k]=RCWA_spectrum(lbda,material,layer_sub,pattern,u,v,phi,theta,polar,N_ord)
     E=1.23984/lbda
@@ -241,12 +244,12 @@ sample_parameters=[ax,t_tot,etha,FF]
 # np.savetxt("Preliminary_results\sample_parameters_0.txt", sample_parameters)   
 # %% Plot result
 signalR=(R-R_sub)/R_sub
-# signalR=(signalR-np.min(signalR))/(np.max(signalR)-np.min(signalR))
+signalR=(signalR-np.min(signalR))/(np.max(signalR)-np.min(signalR))
 # signalR=R
 
 signalA=(A-A_sub)/A_sub
 signalA=(signalA-np.min(signalA))/(np.max(signalA)-np.min(signalA))
-signalA=A
+# signalA=A
 
 plt.rcParams['font.size'] = '16'
 
