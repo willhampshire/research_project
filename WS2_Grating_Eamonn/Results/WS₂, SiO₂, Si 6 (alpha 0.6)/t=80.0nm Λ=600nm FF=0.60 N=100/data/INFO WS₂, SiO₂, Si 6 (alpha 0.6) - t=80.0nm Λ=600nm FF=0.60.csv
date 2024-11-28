@@ -1,0 +1,5 @@
+name,dispersive,material_path,material_n_k,pattern,description,thickness,thickness_sub
+air,False,,"[1, 0]",,Air.,0.0,0.0
+WS₂,True,Materials/WS2_Munkhbat2022.txt,,"Pattern(p=0.600, ff=0.600, w=0.360, form=1.000, lattice=[[1.2, 0], [0, 0]])","TMD layer, WS₂.",0.08,0.0
+SiO₂,True,Materials/SiO2_Horiba.txt,,,Silicon Dioxide substrate.,0.29,0.29
+Si,True,Materials/cSi_Green_2008.txt,,,Silicon substrate.,2.0,2.0

@@ -326,7 +326,7 @@ def time_it(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"{elapsed_time:.1f} seconds elapsed - {func.__name__}")
+        print(f"{elapsed_time:.0f} seconds / {elapsed_time/60:.1f} mins elapsed, running {func.__name__}")
         return result
     return wrapper
 
