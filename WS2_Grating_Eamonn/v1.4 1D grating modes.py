@@ -603,9 +603,9 @@ def main() -> None:
     # thicknesses = [0.035]
     # filling = [0.73]
 
-    periods = range_in(0.3, 0.6, 0.02)
+    periods = range_in(0.3, 0.6, 0.05)
     thicknesses = range_in(0.02, 0.09, 0.01)
-    filling = range_in(0.7, 0.9, 0.04)
+    filling = range_in(0.5, 0.9, 0.1)
 
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
