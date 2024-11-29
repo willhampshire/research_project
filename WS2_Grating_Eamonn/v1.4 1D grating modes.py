@@ -600,13 +600,13 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.42]
-    # thicknesses = [0.035]
-    # filling = [0.73]
+    periods = [0.5]
+    thicknesses = [0.07]
+    filling = [0.74]
 
-    periods = range_in(0.3, 0.6, 0.05)
-    thicknesses = range_in(0.02, 0.09, 0.01)
-    filling = range_in(0.5, 0.9, 0.1)
+    # periods = range_in(0.3, 0.6, 0.05)
+    # thicknesses = range_in(0.02, 0.09, 0.01)
+    # filling = range_in(0.5, 0.9, 0.1)
 
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
@@ -619,7 +619,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(N=100, period=ax, thickness=t, filling=ff, experiment_suf='6 (alpha 0.6)')
+                    run_simulation(N=75, period=ax, thickness=t, filling=ff, alpha=None, experiment_suf='test')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm
