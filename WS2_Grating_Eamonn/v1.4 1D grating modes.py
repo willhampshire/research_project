@@ -520,7 +520,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     m1 = r'$^{-1}$'
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
     pcm = axs.pcolor(k_scan,1.240/lbda,signalR,cmap='viridis',clim=(0,1))
-    axs.set(xlabel=f'k$_x$ [{greek.mu}{m1}]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
+    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')
