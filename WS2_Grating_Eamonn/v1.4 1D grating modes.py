@@ -471,7 +471,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
         ## Run S4 simulation for each wavelength
 
-        print(f"--------------\nDEBUG\n{lbda,material_RCWA, layer_RCWA, pattern_RCWA[0],pattern_RCWA[1][0], pattern_RCWA[1][1],phi,theta,polar,N_ord}")
+        # print(f"--------------\nDEBUG\n{lbda,material_RCWA, layer_RCWA, pattern_RCWA[0],pattern_RCWA[1][0], pattern_RCWA[1][1],phi,theta,polar,N_ord}")
 
         lbda, R[:,i_k], T[:,i_k], A[:,i_k] = RCWA_spectrum(lbda,
                                                            material_RCWA, layer_RCWA, pattern_RCWA[0],
@@ -602,14 +602,16 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.5]
-    thicknesses = [0.07]
-    filling = [0.74]
+    periods = [0.46]
+    thicknesses = [0.035]
+    filling = [0.78]
 
     # periods = range_in(0.3, 0.6, 0.05)
     # thicknesses = range_in(0.02, 0.09, 0.01)
     # filling = range_in(0.5, 0.9, 0.1)
 
+    alphas = [0.01]
+    alphas.extend(range_in(0.1,0.9,0.1))
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
@@ -619,14 +621,15 @@ def main() -> None:
     for ax in periods:
         for t in thicknesses:
             for ff in filling:
-                iterations += 1
-                try:
-                    run_simulation(N=75, period=ax, thickness=t, filling=ff, alpha=None, experiment_suf='test')
-                except SizeLimitException as e:
-                    print(e.message)
-                    continue # skip current iteration if features <100nm
-                finally:
-                    print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
+                for alpha in alphas:
+                    iterations += 1
+                    try:
+                        run_simulation(N=75, period=ax, thickness=t, filling=ff, alpha=alpha, experiment_suf=f'7 (alpha {alpha:.1f})')
+                    except SizeLimitException as e:
+                        print(e.message)
+                        continue # skip current iteration if features <100nm
+                    finally:
+                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
 
 
 main()
