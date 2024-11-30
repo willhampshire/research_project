@@ -363,8 +363,10 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # demorized gratings - 15, otherwise - 7 (regular periodic 1D simulation)
     if alpha != None:
         N_ord = 15
+        lattice_u_factor = 2
     else:
         N_ord = 7
+        lattice_u_factor = 1
 
     # Materials definition, 2 ways:
     # 1 - Location for a dispersive material;
@@ -408,7 +410,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     FF=filling # ~ .8
     w=FF*ax
 
-    u = [2*ax, 0]
+    u = [lattice_u_factor*ax, 0]
     v = [0, 0]
 
     # check wire and track detail level isnt smaller than 100nm
@@ -469,7 +471,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
         ## Run S4 simulation for each wavelength
 
-        # print(f"--------------\nDEBUG\n{lbda,material_RCWA, layer_RCWA, pattern_RCWA[0],pattern_RCWA[1][0], pattern_RCWA[1][1],phi,theta,polar,N_ord}")
+        print(f"--------------\nDEBUG\n{lbda,material_RCWA, layer_RCWA, pattern_RCWA[0],pattern_RCWA[1][0], pattern_RCWA[1][1],phi,theta,polar,N_ord}")
 
         lbda, R[:,i_k], T[:,i_k], A[:,i_k] = RCWA_spectrum(lbda,
                                                            material_RCWA, layer_RCWA, pattern_RCWA[0],

@@ -570,9 +570,9 @@ def main() -> None:
     thicknesses = range_in(0.02, 0.09, 0.01)
     filling = range_in(0.7, 0.9, 0.04)
 
-    # periods = [0.58]
-    # thicknesses = [0.02]
-    # filling = [0.70]
+    periods = [0.5]
+    thicknesses = [0.07]
+    filling = [0.70]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
@@ -584,7 +584,7 @@ def main() -> None:
             for ff in filling:
                 iterations += 1
                 try:
-                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='5.1')
+                    run_simulation(75, period=ax, thickness=t, filling=ff, experiment_suf='test')
                 except SizeLimitException as e:
                     print(e.message)
                     continue # skip current iteration if features <100nm
