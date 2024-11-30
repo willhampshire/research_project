@@ -48,9 +48,9 @@ def fit_simulation(results_dir):
         files = sorted(os.listdir(results_dir))
     except:
         return 0
-    file_R = results_dir / files[4]
-    file_R_sub = results_dir / files[5]
-    print(file_R)
+    # file_R = results_dir / files[4]
+    # file_R_sub = results_dir / files[5]
+    # print(file_R)
 
     try:
         N_str = str(results_dir.parents[0]).rsplit('N=')[1]
@@ -58,18 +58,18 @@ def fit_simulation(results_dir):
     except Exception as e:
         print(f"No N present in file name - {e}")
 
-    R = pd.read_csv(file_R, index_col=0)
-    Rsub = pd.read_csv(file_R_sub, index_col=0)
+    signalR_file = results_dir / files[2]
+    df_signalR = pd.read_csv(signalR_file, index_col=0)
+    signalR = df_signalR.to_numpy()
 
-    signalR = (R - Rsub) / Rsub
     signalR = (signalR - np.min(signalR)) / (np.max(signalR) - np.min(signalR))
 
 
 
 
-    lbda_min = 2.2  # y limits in micrometers
-    lbda_max = 1.2
-    lbda = np.linspace(lbda_min, lbda_max, N)  # Generate wavelengths in micrometers
+    max_eV = 2.2
+    min_eV = 1.2
+    energy_eV = np.linspace(max_eV, min_eV, N)  # Generate wavelengths in micrometers
 
     N_k=N
     # k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
@@ -600,9 +600,9 @@ def fit_simulation(results_dir):
     k_scan = np.linspace(-kmax, kmax, N)
 
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
-    pcm = axs.pcolor(k_scan,lbda,signalR,cmap='viridis',clim=(0,1))
+    pcm = axs.pcolor(k_scan, energy_eV, signalR, cmap='viridis', clim=(0, 1))
     m1 = r'{-1}'
-    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(lbda_max, lbda_min), ylabel='Photon Energy [eV]',
+    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]', xlim=(-kmax,kmax), ylim=(min_eV, max_eV), ylabel='Photon Energy [eV]',
             title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.parents[0].name}')
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
