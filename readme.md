@@ -5,16 +5,25 @@ Remake created by Will Hampshire. The script performs Reflective Coupled Wave An
 for simulating the optical properties of layered materials, using [S4 (linked)](https://web.stanford.edu/group/fan/S4/).
 
 ## venv
-Python 3.10(.11)
+Python 3.10(.11).
+
 Install requirements with ```pip install -r requirements.txt```.
 
-## Script
-Run `1D grating modes.py` script to generate simulations (adjust parameter space via main loop entry point). 
+Compiled S4 from source. I would not reccomend with the original branch (tricky and no up to date documentation). 
+Instead try one of the newer forks, phoebe-p/S4 and marcus-o/S4.
+
+## Scripts
+Run `vx.x 1D grating modes.py` in `WS2_Grating_Eamonn/Results` script to generate simulations (adjust parameter space via main loop entry point). 
 Image_browser allows efficient exploration of the results visually.
 
-The original script is `One_set_of_parameters.py`. Using OOP avoids manual typos and errors. See code for usage of functions and explanation of variables.
+The original script is `One_set_of_parameters.py`. Using OOP avoids manual typos and errors. 
+See code for usage of functions and explanation of variables.
 
-## Classes
+
+`image_browser.py` allows quick browsing of the simulations generated. `mode_detection` identifies the photonic mode
+vertex energies, and then `plotting_dependencies.ipynb` visualises the results using a 3D plot.
+
+## Classes (simulation script)
 ### `Pattern`
 Defines the periodic structure of a patterned layer, including the period, filling factor, etc.
 

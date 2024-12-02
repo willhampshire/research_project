@@ -541,6 +541,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     images_folder.mkdir(exist_ok=True)
     data_folder.mkdir(exist_ok=True)
 
+    np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
+
     R_data=np.column_stack([lbda, R])
     R_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_data])
     A_data=np.column_stack([lbda, A])
@@ -610,8 +612,8 @@ def main() -> None:
     # thicknesses = range_in(0.02, 0.09, 0.01)
     # filling = range_in(0.5, 0.9, 0.1)
 
-    alphas = [0.01]
-    alphas.extend(range_in(0.1,0.9,0.1))
+    alphas = [0.3]
+    # alphas.extend(range_in(0.1,0.9,0.1))
 
     num_loops = len(periods)*len(thicknesses)*len(filling)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
@@ -624,7 +626,7 @@ def main() -> None:
                 for alpha in alphas:
                     iterations += 1
                     try:
-                        run_simulation(N=75, period=ax, thickness=t, filling=ff, alpha=alpha, experiment_suf=f'7 (alpha {alpha:.1f})')
+                        run_simulation(N=200, period=ax, thickness=t, filling=ff, alpha=alpha, experiment_suf=f'7 (alpha {alpha:.2f})')
                     except SizeLimitException as e:
                         print(e.message)
                         continue # skip current iteration if features <100nm
