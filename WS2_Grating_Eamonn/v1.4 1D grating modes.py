@@ -59,8 +59,8 @@ class Pattern:
             self.lattice = lattice
 
     def __str__(self):
-        return (f"Pattern(p={self.period:.3f}, ff={self.filling:.3f}, "
-                f"w={self.width:.3f}, form={self.form:.3f}, lattice={self.lattice})")
+        return (f"Pattern(ax={self.period:.3f}, ff={self.filling:.3f}, "
+                f"w={self.width:.3f}, alpha={self.alpha}, form={self.form:.3f}, lattice={self.lattice})")
 
 
 class Material:
