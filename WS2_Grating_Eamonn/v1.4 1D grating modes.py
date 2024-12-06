@@ -604,19 +604,20 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.46]
-    thicknesses = [0.035]
-    filling = [0.78]
+    # periods = [0.46]
+    # thicknesses = [0.035]
+    # filling = [0.78]
 
-    # periods = range_in(0.3, 0.6, 0.05)
-    # thicknesses = range_in(0.02, 0.09, 0.01)
-    # filling = range_in(0.5, 0.9, 0.1)
+    periods = range_in(0.3, 0.6, 0.1)
+    thicknesses = range_in(0.02, 0.1, 0.02)
+    filling = range_in(0.5, 0.9, 0.1)
 
-    alphas = [0.01]
+    alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
 
-    num_loops = len(periods)*len(thicknesses)*len(filling)
-    print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75.")
+    num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
+    print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
+          f"{num_loops:.1f}mins for N=75 order 15, {2.1*num_loops:.1f}mins for N=125 order 15")
     print(f"PERIODS {periods}\nTHICKNESSES {thicknesses}\nFILLINGS {filling}")
     time.sleep(1)
 
@@ -626,7 +627,7 @@ def main() -> None:
                 for alpha in alphas:
                     iterations += 1
                     try:
-                        run_simulation(N=200, period=ax, thickness=t, filling=ff, 
+                        run_simulation(N=125, period=ax, thickness=t, filling=ff,
                             alpha=alpha, experiment_suf=f'8 (alpha {alpha:.2f})')
                     except SizeLimitException as e:
                         print(e.message)

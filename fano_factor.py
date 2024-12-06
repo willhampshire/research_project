@@ -82,7 +82,7 @@ def fit_simulation(results_dir):
     k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
     # k_scan = px_kx_convert(np.array(list(df_signalR.columns)), kmax, N_k-1)
     ky=0.000
-    title_name = 'SIGNALR CSV'
+    title_name = f'SIGNALR CSV - {results_dir.parents[0].name}'
 
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
     pcm = axs.pcolor(k_scan,energy_eV,signalR,cmap='viridis',clim=(0,1))
@@ -101,11 +101,16 @@ def fit_simulation(results_dir):
 
     print(df_signalR.head())
 
-    kx_0_px = int(N/2) + 50
+    kx_0_px = int(N/2)
     if N % 2 == 1:
         print("Odd pixels number")
     line_profile = df_signalR.iloc[:, kx_0_px]
     line_profile.plot()
+    plt.title(f"Line profile at k$_x$=0 "
+              f"[{greek.mu}m{phys.sup_minus}{phys.sup_1}]"
+              f"\n{results_dir.parents[0].name}")
+    image_save_path = results_dir.parents[0] / 'images' / 'line_profile.png'
+    plt.savefig(image_save_path, dpi=300)
     plt.show()
 
 

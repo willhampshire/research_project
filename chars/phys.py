@@ -30,6 +30,7 @@ sub_1 = '\u2081'  # Subscript 1 (₁)
 sub_2 = '\u2082'  # Subscript 2 (₂)
 sub_3 = '\u2083'  # Subscript 3 (₃)
 
+sup_1 = '\u00B9'  # Superscript 1
 sup_2 = '\u00B2'  # Superscript 2 (²)
 sup_3 = '\u00B3'  # Superscript 3 (³)
 sup_minus = '\u207B'  # Superscript minus (⁻)
