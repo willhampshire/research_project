@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import seaborn as sns
 from scipy.ndimage import sobel, gaussian_filter
 from scipy.signal import find_peaks
@@ -55,7 +56,9 @@ heatmap_matrix = df.pivot(index="y_value", columns="alpha", values="reflectivity
 # Plot the heatmap using seaborn
 plt.figure(figsize=(10, 6))
 sns.heatmap(heatmap_matrix, cmap="viridis", cbar_kws={'label': 'Energy Reflectivity'}, annot=False)
-plt.title('Heatmap of Energy Reflectivity vs Alpha and Y-Value')
-plt.xlabel('Alpha')
-plt.ylabel('Y-Value')
+plt.title(fr'Map of reflectivity at k$_x$=0 as a function of {greek.alpha}')
+plt.xlabel(f'Asymmetry {greek.alpha}')
+plt.ylabel('Energy [eV]')
+
+
 plt.show()
