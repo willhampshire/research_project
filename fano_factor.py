@@ -23,7 +23,7 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 7 (alpha 0.30)'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.05)'
 
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
@@ -59,6 +59,7 @@ def fit_simulation(results_dir):
         print(f"No N present in file name - {e}")
 
     if not files[2].endswith('SIGNALR.csv'):
+        print(files)
         print("Error, wrong file")
         return 0
 
@@ -105,10 +106,25 @@ def fit_simulation(results_dir):
     if N % 2 == 1:
         print("Odd pixels number")
     line_profile = df_signalR.iloc[:, kx_0_px]
+
+    index_eV = np.linspace(2.2,1.2,len(line_profile))
+    assert len(index_eV) == len(line_profile)
+
+    line_profile.index = index_eV
+
+    print(line_profile)
+
     line_profile.plot()
+
     plt.title(f"Line profile at k$_x$=0 "
               f"[{greek.mu}m{phys.sup_minus}{phys.sup_1}]"
               f"\n{results_dir.parents[0].name}")
+    plt.xlabel(f"Energy [eV]")
+    plt.ylabel("Reflectivity (normalised)")
+    plt.axvline(1.4, color='red', lw=1, linestyle='--', label='1.4 eV')
+    plt.axvline(1.6, color='green', lw=1, linestyle='--', label='1.6 eV')
+    plt.axvline(1.8, color='blue', lw=1, linestyle='--', label='1.8 eV')
+
     image_save_path = results_dir.parents[0] / 'images' / 'line_profile.png'
     plt.savefig(image_save_path, dpi=300)
     plt.show()
