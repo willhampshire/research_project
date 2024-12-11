@@ -65,11 +65,15 @@ def fit_simulation(results_dir):
     signalR = (signalR - np.min(signalR)) / (np.max(signalR) - np.min(signalR))
 
 
-
-
     max_eV = 2.2
     min_eV = 1.2
-    energy_eV = np.linspace(max_eV, min_eV, N)  # Generate wavelengths in micrometers
+    lbda_min = 1.240 / max_eV # y limits
+    lbda_max = 1.240 / min_eV
+
+    lbda = np.linspace(lbda_min,lbda_max,N)
+
+    energy_eV = 1.24 / np.linspace(max_eV, min_eV, N)  # Generate wavelengths in micrometers
+
 
     N_k=N
     # k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
