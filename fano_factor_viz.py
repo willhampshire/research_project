@@ -1,64 +1,73 @@
 from pathlib import Path
 import os
-import re
-import json
-import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-import seaborn as sns
-from scipy.ndimage import sobel, gaussian_filter
-from scipy.signal import find_peaks
-from scipy.optimize import curve_fit
 
 from chars import greek, phys
 
-data = dict(np.load('/Users/williamhampshire/Desktop/pycharm/research_project/fano_profiles/fano_npy_6D.npy', allow_pickle=True).item())
-print(np.ndim(data))
+# Define file paths
+cwd = Path(os.getcwd())
+fano_profiles = cwd / 'fano_profiles/fano_npy_6D.npy'
 
-# alpha = '0.00'
-period = '300'
-thickness = '100.0'
-filling = '0.6'
+# Load data
+data = dict(np.load(fano_profiles, allow_pickle=True).item())
 
+# Define period, thickness, and filling
+period = '600'
+thickness = '20.0'
+filling = '0.7'
 
-# print(data)
-
+# Prepare data for the heatmap
 heatmap_data = []
 
+# Loop through data
 for alpha in data:
-    print(alpha)
     try:
         energy_reflectivity = data[alpha][period][thickness][filling]
-        print(energy_reflectivity)
-    except:
+    except KeyError:
         print(f"SKIPPING alpha {alpha}")
         continue
-    print(energy_reflectivity)
-    # Assuming you want the first column for the y-values (data[alpha][0])
-    y_values = energy_reflectivity[0]  # First column (you may need to adjust depending on your data structure)
 
-    # The energy reflectivity (color intensity) is taken from the second column (data[alpha][1])
-    reflectivity = energy_reflectivity[1]  # Second column (adjust based on your data)
+    # Extract y-values (first column) and reflectivity (second column)
+    y_values = energy_reflectivity[0]  # First column
+    reflectivity = energy_reflectivity[1]  # Second column
 
-    # Append the data in the format [alpha, y_value, reflectivity]
+    # Append the data for the heatmap
     for i in range(len(y_values)):
         heatmap_data.append([float(alpha), y_values[i], reflectivity[i]])
 
-    # Convert the data to a Pandas DataFrame
-df = pd.DataFrame(heatmap_data, columns=['alpha', 'y_value', 'reflectivity'])
+# Convert to DataFrame
+df = pd.DataFrame(heatmap_data, columns=['alpha', 'energy', 'reflectivity'])
+df['wavelength'] = 1240 / df['energy']
 
-# Pivot the DataFrame to create a matrix suitable for a heatmap
-heatmap_matrix = df.pivot(index="y_value", columns="alpha", values="reflectivity")
+# Pivot the DataFrame for plotting
+heatmap_matrix = df.pivot(index="wavelength", columns="alpha", values="reflectivity")
 
-
-# Plot the heatmap using seaborn
+# Create the plot using Matplotlib
 plt.figure(figsize=(10, 6))
-sns.heatmap(heatmap_matrix, cmap="viridis", cbar_kws={'label': 'Energy Reflectivity'}, annot=False)
-plt.title(fr'Map of reflectivity at k$_x$=0 as a function of {greek.alpha}')
-plt.xlabel(f'Asymmetry {greek.alpha}')
-plt.ylabel('Energy [eV]')
 
+# Plot the heatmap using pcolormesh
+cax = plt.pcolormesh(heatmap_matrix.columns, heatmap_matrix.index, heatmap_matrix, cmap="viridis", shading='auto')
 
+# Add colorbar
+cbar = plt.colorbar(cax)
+cbar.set_label('Energy Reflectivity')
+
+# Customize the plot
+plt.title(f'Map of reflectivity at $k_x=0$ as a function of {greek["alpha"]}\np={period} t={thickness} ff={filling}')
+plt.xlabel(f'Asymmetry {greek["alpha"]}')
+plt.ylabel('Wavelength [nm]')
+
+# Set the y-axis ticks and labels
+plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=10))
+wavelength_ticks = np.linspace(df['wavelength'].min(), df['wavelength'].max(), 10)
+plt.yticks(wavelength_ticks, [f"{tick:.1f}" for tick in wavelength_ticks])
+
+# Set the x-axis ticks
+alpha_ticks = np.linspace(df['alpha'].min(), df['alpha'].max(), 10)
+plt.xticks(alpha_ticks, [f"{tick:.2f}" for tick in alpha_ticks])
+
+# Display the plot
 plt.show()
