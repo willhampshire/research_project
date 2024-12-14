@@ -56,18 +56,21 @@ cbar = plt.colorbar(cax)
 cbar.set_label('Energy Reflectivity')
 
 # Customize the plot
-plt.title(f'Map of reflectivity at $k_x=0$ as a function of {greek["alpha"]}\np={period} t={thickness} ff={filling}')
-plt.xlabel(f'Asymmetry {greek["alpha"]}')
+plt.title(f'Map of reflectivity at $k_x=0$ as a function of {greek.alpha}\np={period} t={thickness} ff={filling}')
+plt.xlabel(f'Asymmetry {greek.alpha}')
 plt.ylabel('Wavelength [nm]')
 
 # Set the y-axis ticks and labels
-plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=10))
-wavelength_ticks = np.linspace(df['wavelength'].min(), df['wavelength'].max(), 10)
+# plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=10))
+# wavelength_ticks = np.linspace(df['wavelength'].min(), df['wavelength'].max(), 10)
+wavelength_ticks = np.linspace(500, 1000, 11)
 plt.yticks(wavelength_ticks, [f"{tick:.1f}" for tick in wavelength_ticks])
 
 # Set the x-axis ticks
-alpha_ticks = np.linspace(df['alpha'].min(), df['alpha'].max(), 10)
+alpha_ticks = np.linspace(df['alpha'].min(), df['alpha'].max(), 5)
 plt.xticks(alpha_ticks, [f"{tick:.2f}" for tick in alpha_ticks])
+
+plt.ylim(df['wavelength'].min(), df['wavelength'].max())
 
 # Display the plot
 plt.show()
