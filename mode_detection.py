@@ -30,7 +30,6 @@ results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5.
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=38.0nm Λ=500nm FF=0.76 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=20.0nm Λ=550nm FF=0.55 N=75' / 'data'
 
-
 savepath = cwd / 'mode_fitting'
 savepath.mkdir(exist_ok=True, parents=True)
 
@@ -54,13 +53,14 @@ def fit_simulation(results_dir):
 
     try:
         N_str = str(results_dir.parents[0]).rsplit('N=')[1]
-        N = int(N_str) - 1
+        N = int(N_str)
     except Exception as e:
         print(f"No N present in file name - {e}")
 
     signalR_file = results_dir / files[2]
-    df_signalR = pd.read_csv(signalR_file, index_col=0)
-    signalR = df_signalR.to_numpy()
+    signalR = np.loadtxt(signalR_file, delimiter=',')
+    df_signalR = pd.DataFrame(signalR)
+    # signalR = df_signalR.to_numpy()
 
     signalR = (signalR - np.min(signalR)) / (np.max(signalR) - np.min(signalR))
 
@@ -69,13 +69,14 @@ def fit_simulation(results_dir):
     min_eV = 1.2
     lbda_min = 1.240 / max_eV # y limits
     lbda_max = 1.240 / min_eV
+    N_k = N + 1
 
-    lbda = np.linspace(lbda_min,lbda_max,N)
+    lbda = np.linspace(lbda_min,lbda_max,N_k)
 
-    energy_eV = 1.24 / np.linspace(max_eV, min_eV, N)  # Generate wavelengths in micrometers
+    energy_eV = 1.24 / lbda  # Generate wavelengths in micrometers
 
 
-    N_k=N
+
     # k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
     kmax=5
     k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
@@ -83,9 +84,8 @@ def fit_simulation(results_dir):
     title_name = 'signalR, from R and R_sub CSVs'
 
     # fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
-    # pcm = axs.pcolor(k_scan,lbda,signalR,cmap='viridis',clim=(0,1))
+    # pcm = axs.pcolor(k_scan,energy_eV,signalR,cmap='viridis',clim=(0,1))
     # axs.set(xlabel=f'k$_x$ [{greek.mu}m]',
-    #         xlim=(-kmax,kmax),ylim=(lbda_max, lbda_min),
     #         ylabel='Photon Energy [eV]',
     #         title=title_name)
     # # y_eV = 1.45    # reference line at 1.45eV
@@ -592,16 +592,16 @@ def fit_simulation(results_dir):
         :param array: list or single number
         :return: new list or number
         """
-        max_energy, min_energy = 2.2, 1.2
+        max_energy, min_energy = 1.24/2.2, 1.24/1.2
         min_pixel, max_pixel = 0, N
-        energy_values = max_energy - (array - min_pixel) * (max_energy - min_energy) / (max_pixel - min_pixel)
-        return energy_values
+        values = max_energy - (array - min_pixel) * (max_energy - min_energy) / (max_pixel - min_pixel)
+        return 1.24/values
 
 
 
     k_scan_line = np.linspace(-kmax, kmax, 300)
-    x_graphing = np.linspace(0, N+1, 300)
-    k_scan = np.linspace(-kmax, kmax, N)
+    x_graphing = np.linspace(0, N_k, 300)
+    k_scan = np.linspace(-kmax, kmax, N_k)
 
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
     pcm = axs.pcolor(k_scan, energy_eV, signalR, cmap='viridis', clim=(0, 1))
@@ -624,11 +624,14 @@ def fit_simulation(results_dir):
             plt.plot(k_scan_line, fitted_to_graph(fit), 'r-', linewidth=2, label='Fit')
             fits.append(fit)
 
+            print(fit)
+
             vertex = fitted_to_graph(hyperbolas[i%2](N/2, *popt))
             asym = fitted_to_graph(hyperbolas[i%2](1e9, *popt))
 
             vertices.append(vertex)
             asyms.append(asym)
+            print(vertex)
 
             plt.axhline(y=vertex, color='m', linestyle='--', label='Vertex')
             plt.axhline(y=asym, color='k', linestyle=':', label='Asymptote', linewidth=3)
