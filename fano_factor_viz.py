@@ -15,9 +15,9 @@ fano_profiles = cwd / 'fano_profiles/fano_npy_6D.npy'
 data = dict(np.load(fano_profiles, allow_pickle=True).item())
 
 # Define period, thickness, and filling
-period = '600'
-thickness = '20.0'
-filling = '0.7'
+period = '300'
+thickness = '100.0'
+filling = '0.6'
 
 # Prepare data for the heatmap
 heatmap_data = []

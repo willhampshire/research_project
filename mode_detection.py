@@ -619,7 +619,6 @@ def fit_simulation(results_dir):
     asyms = []
     for i in [0,1,2,3,4,5]:
         try:
-            popt = fitting_data[f'{i}']['popt']
             fit = hyperbolas[i%2](x_graphing, *popt)
             plt.plot(k_scan_line, fitted_to_graph(fit), 'r-', linewidth=2, label='Fit')
             fits.append(fit)
@@ -635,6 +634,8 @@ def fit_simulation(results_dir):
 
             plt.axhline(y=vertex, color='m', linestyle='--', label='Vertex')
             plt.axhline(y=asym, color='k', linestyle=':', label='Asymptote', linewidth=3)
+
+            popt = fitting_data[f'{i}']['popt']
         except:
             print(f"MODE NOT FOUND FOR i={i}")
             continue
