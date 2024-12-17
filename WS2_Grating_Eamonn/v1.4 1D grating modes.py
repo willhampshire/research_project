@@ -363,7 +363,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # demorized gratings - 15, otherwise - 7 (regular periodic 1D simulation)
     if alpha != None:
         N_ord = 15
-        lattice_u_factor = 2
+        lattice_u_factor = 2 # double period grating
     else:
         N_ord = 7
         lattice_u_factor = 1
@@ -406,14 +406,25 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     min_detail = 100/1000  # 100 nm
 
+
+    # use legacy variable names from here
+
     ax=period # range .2 ~ .6
-    FF=filling # ~ .8
+    FF=filling # ~ .7/8
     w=FF*ax
 
     u = [lattice_u_factor*ax, 0]
     v = [0, 0]
 
     # check wire and track detail level isnt smaller than 100nm
+    if alpha != None:
+        wa = w * (1-alpha)
+        axa = w * (1-alpha)
+        if (wa < min_detail) or ((axa - wa) < min_detail):
+            # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
+            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
+                                     exceeded=f"{wa:.3f} or {axa - w:.3f} < {min_detail:.3f}")
+
     if (w<0.1) or ((ax-w)<min_detail):
         #sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
         raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
@@ -632,7 +643,7 @@ def main() -> None:
                     iterations += 1
                     try:
                         run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=None, experiment_suf=f'8 (alpha {alpha:.2f})')
+                            alpha=None, experiment_suf=f'5.2 (alpha {alpha:.2f})')
 
                     except SizeLimitException as e:
                         print(e.message)
