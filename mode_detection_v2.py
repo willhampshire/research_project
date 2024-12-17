@@ -24,7 +24,7 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5.1'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5.2 (alpha 0.00)'
 
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
 # results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
@@ -40,6 +40,8 @@ sims = sorted(os.listdir(results_top_dir))
 if 'summary.json' in sims:
     sims.remove('summary.json')
 print(len(sims))
+
+print(sims)
 
 # sims = [Path(cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5' / 't=80.0nm Λ=600nm FF=0.78 N=75')]
 
@@ -346,7 +348,12 @@ def fit_simulation(results_dir):
         """
         max_energy, min_energy = 1.24 / 2.2, 1.24 / 1.2
         min_pixel, max_pixel = 0, N
-        values = 1.24 / array
+        try:
+            values = 1.24 / array
+        except ZeroDivisionError:
+            if len(array) == 1:
+                values = 0
+
         pixel = min_pixel + (max_pixel - min_pixel) * (max_energy - values) / (max_energy - min_energy)
         return pixel
 
@@ -537,6 +544,7 @@ def fit_simulation(results_dir):
 
             if y_min_1 < 1.2:
                 y_min_1 = 1.2
+                print('MIN < 1.2')
 
             print(y_min_1, y_max_1)
 
@@ -558,7 +566,8 @@ def fit_simulation(results_dir):
                     result = 0
 
             print(f"******** RESULT ********\n{results}")
-        except:
+        except Exception as e:
+            print(f"EXCEPTION {e}")
             break
 
 

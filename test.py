@@ -45,7 +45,7 @@ def fitted_to_graph(array: list | float, N: int = N) -> list | float:
 
 
 
-num = np.array([97, 95, 90, 71])
+num = 0
 print(num)
 print(fitted_to_graph(num))
 print(graph_to_fitted(num))
