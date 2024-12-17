@@ -608,12 +608,13 @@ def main() -> None:
     # thicknesses = [0.035]
     # filling = [0.78]
 
-    periods = range_in(0.3, 0.6, 0.1)
+    periods = range_in(0.3, 0.6, 0.05)
     thicknesses = range_in(0.02, 0.1, 0.02)
-    filling = range_in(0.5, 0.9, 0.1)
+    filling = range_in(0.7, 0.9, 0.05)
 
     alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
+    alphas = [.0]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -621,6 +622,9 @@ def main() -> None:
     print(f"PERIODS {periods}\nTHICKNESSES {thicknesses}\nFILLINGS {filling}")
     time.sleep(1)
 
+
+
+    # change the values of N, experiment suffix, alpha for each batch
     for ax in periods:
         for t in thicknesses:
             for ff in filling:
@@ -628,10 +632,12 @@ def main() -> None:
                     iterations += 1
                     try:
                         run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'8 (alpha {alpha:.2f})')
+                            alpha=None, experiment_suf=f'8 (alpha {alpha:.2f})')
+
                     except SizeLimitException as e:
                         print(e.message)
                         continue # skip current iteration if features <100nm
+
                     finally:
                         print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
 
