@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+import json
 
 from Functions.argument_angle import argument_angle
 from Functions.RCWA_spectrum import RCWA_spectrum
@@ -336,7 +337,7 @@ def time_it(func):
 # main function
 @time_it
 def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:float|None=None,
-                   experiment_suf:str=None):
+                   experiment_suf:str=None) -> np.ndarray:
     """
     Main sim function.
     :param N simulation resolution
@@ -353,8 +354,10 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # E=1.23987/lbda
 
     # k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
-    kmax=5
-    k_scan=np.linspace(-kmax,kmax,N) #mu-1
+    # kmax=5
+    # k_scan=np.linspace(-kmax,kmax,N) #mu-1
+
+    k_scan = np.array([0])
 
     ky=0.000 #mu-1
 
@@ -404,7 +407,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    description=f"TMD layer, WS{phys.sub_2}.")
 
 
-    min_detail = 100/1000  # 100 nm
+    min_detail = 100/1000  # 100 nm is 0.1 um
 
 
     # use legacy variable names from here
@@ -419,10 +422,10 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # check wire and track detail level isnt smaller than 100nm
     if alpha != None:
         wa = w * (1-alpha)
-        axa = w * (1-alpha)
+        axa = ax * (1-alpha)
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
+            raise SizeLimitException(message=f"ALPHA {alpha} - Cannot have track/wire feature <100nm.",
                                      exceeded=f"{wa:.3f} or {axa - w:.3f} < {min_detail:.3f}")
 
     if (w<min_detail) or ((ax-w)<min_detail):
@@ -468,6 +471,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     A_sub=np.zeros((lbda.size,k_scan.size),dtype=float)
     R_sub=np.zeros((lbda.size,k_scan.size),dtype=float)
     T_sub=np.zeros((lbda.size,k_scan.size),dtype=float)
+
+
     for i_k in range(0, k_scan.size):
         kx = k_scan[i_k]
         k_inplan = math.sqrt(kx ** 2 + ky ** 2)
@@ -524,21 +529,25 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                f"FF={FF:.2f}")
 
 
-    project_name = f'{swg.get_summary_name()} {experiment_suf}'
+    project_name = f'ALPHA {swg.get_summary_name()} {experiment_suf}'
     # project_name = 'feature testing'
 
     title_name = f"{project_name}\n{details}"
     plt.rcParams['font.size'] = '16'
 
-    m1 = r'$^{-1}$'
-    fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
-    pcm = axs.pcolor(k_scan,1.240/lbda,signalR,cmap='viridis',clim=(0,1))
-    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
-    # y_eV = 1.45    # reference line at 1.45eV
-    # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
-    cbar =fig.colorbar(pcm,location='right')
-    cbar.set_label('Reflectivity contrast')
-    plt.minorticks_on()
+    # m1 = r'$^{-1}$'
+    # fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
+    # pcm = axs.pcolor(k_scan,1.240/lbda,signalR,cmap='viridis',clim=(0,1))
+    # axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
+    # # y_eV = 1.45    # reference line at 1.45eV
+    # # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
+    # cbar =fig.colorbar(pcm,location='right')
+    # cbar.set_label('Reflectivity contrast')
+    # plt.minorticks_on()
+
+    plt.plot(1.24/lbda, signalR, '-o')
+    plt.xlabel('Energy [eV]')
+    plt.ylabel('Reflectivty [arb]')
 
     cwd = Path(os.getcwd())
     results_dir = cwd / "Results"
@@ -585,15 +594,20 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
-    if alpha != None:
-        title_name += f" {greek.alpha}={alpha:.3f}"
+    # if alpha != None:
+    #     title_name += f" {greek.alpha}={alpha:.3f}"
 
     plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
-    plt.show()
+    # plt.show()
 
 
     # print("*** SUMMARY ***")
     # print(swg.summary_txt())
+
+    global json_dir
+    json_dir = results_dir / project_name
+
+    return signalR
 
 
 def range_in(start:float, stop:float, step:float) -> List[float]:
@@ -615,17 +629,16 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.46]
-    # thicknesses = [0.035]
-    # filling = [0.78]
+    # periods = [0.70]
+    # thicknesses = [0.01]
+    # filling = [0.7]
+    # alphas = [0.1]
 
-    periods = range_in(0.3, 0.6, 0.05)
-    thicknesses = range_in(0.02, 0.1, 0.02)
-    filling = range_in(0.7, 0.9, 0.05)
+    periods = range_in(0.4, 0.8, 0.1)
+    thicknesses = range_in(0.02, 0.1, 0.04)
+    filling = range_in(0.7, 0.9, 0.1)
+    alphas = range_in(.0, 0.3, 0.02)
 
-    alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
-    # alphas.extend(range_in(0.1,0.9,0.1))
-    alphas = [.0]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -634,24 +647,64 @@ def main() -> None:
     time.sleep(1)
 
 
-
     # change the values of N, experiment suffix, alpha for each batch
+
+    periods_p = [] # periods profiles
     for ax in periods:
+        thickness_p = []
         for t in thicknesses:
+            fillings_p = []
             for ff in filling:
+                alphas_p = []
                 for alpha in alphas:
                     iterations += 1
-                    try:
-                        run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=None, experiment_suf=f'5.2 (alpha {alpha:.2f})')
 
-                    except SizeLimitException as e:
-                        print(e.message)
+                    try:
+                        profile = run_simulation(N=125, period=ax, thickness=t, filling=ff,
+                            alpha=alpha, experiment_suf=f'1')
+
+                        # add profile as list to dict/json structure
+                        profile_flat = profile.flatten().tolist()
+                        alpha_dict = {f'{alpha:.4f}': profile_flat}
+                        alphas_p.append(alpha_dict)
+
+                    except SizeLimitException as sle:
+                        print(sle.message, sle.exceeded)
                         continue # skip current iteration if features <100nm
+
+                    except Exception as e:
+                        print(e)
 
                     finally:
                         print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
 
+                # alpha loop done
+                filling_dict = {f'{ff:.4f}': alphas_p}
+                fillings_p.append(filling_dict)
+
+            # filling
+            thickness_dict = {f'{t:.4f}': fillings_p}
+            thickness_p.append(thickness_dict)
+
+        # thickness
+        periods_dict = {f'{ax:.4f}': thickness_p}
+        periods_p.append(periods_dict)
+
+    # end of loops
+
+    # keys are strings with :.4f specifier
+    print(periods_p)
+
+    global json_dir
+    if json_dir:
+        json_file = json_dir / 'summary_alpha.json'
+        with open(json_file, 'w') as file:
+            json.dump(periods_p, file, indent=4)
+
+
+
+
+json_dir: Path|None = None
 
 main()
 
