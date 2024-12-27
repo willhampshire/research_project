@@ -407,7 +407,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    description=f"TMD layer, WS{phys.sub_2}.")
 
 
-    min_detail = 100/1000  # 100 nm is 0.1 um
+    min_detail = 50/1000  # 100 nm is 0.1 um
 
 
     # use legacy variable names from here
@@ -618,7 +618,7 @@ def range_in(start:float, stop:float, step:float) -> List[float]:
     """
     n_points = round(((stop-start)/step),0) +1
     linspace = list(np.linspace(start, stop, int(n_points)))
-    return [round(num, 6) for num in linspace]
+    return list([round(num, 6) for num in linspace])
 
 # main entry point
 @time_it
@@ -630,14 +630,14 @@ def main() -> None:
     # filling = [0.5, 0.7, 0.9]
 
     # periods = [0.70]
-    # thicknesses = [0.01]
-    # filling = [0.7]
-    # alphas = [0.1]
+    thicknesses = [0.01]
+    filling = [0.7]
+    alphas = [0.1]
 
     periods = range_in(0.4, 0.8, 0.1)
-    thicknesses = range_in(0.02, 0.1, 0.04)
+    thicknesses = range_in(0.01, 0.1, 0.04)
     filling = range_in(0.7, 0.9, 0.1)
-    alphas = range_in(.0, 0.3, 0.02)
+    alphas = range_in(.0, 0.3, 0.01)
 
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
@@ -649,24 +649,24 @@ def main() -> None:
 
     # change the values of N, experiment suffix, alpha for each batch
 
-    periods_p = [] # periods profiles
+    periods_p = {} # periods profiles
     for ax in periods:
-        thickness_p = []
+        thickness_p = {}
         for t in thicknesses:
-            fillings_p = []
+            fillings_p = {}
             for ff in filling:
-                alphas_p = []
+                alphas_p = {}
                 for alpha in alphas:
                     iterations += 1
 
                     try:
-                        profile = run_simulation(N=125, period=ax, thickness=t, filling=ff,
+                        profile = run_simulation(N=200, period=ax, thickness=t, filling=ff,
                             alpha=alpha, experiment_suf=f'1')
 
                         # add profile as list to dict/json structure
-                        profile_flat = profile.flatten().tolist()
-                        alpha_dict = {f'{alpha:.4f}': profile_flat}
-                        alphas_p.append(alpha_dict)
+                        profile_flat = profile.flatten().tolist() # 1D so can just flatten
+                        # alpha_dict = {f'{alpha:.4f}': profile_flat}
+                        alphas_p[f'{alpha:.4f}'] = profile_flat
 
                     except SizeLimitException as sle:
                         print(sle.message, sle.exceeded)
@@ -679,16 +679,16 @@ def main() -> None:
                         print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
 
                 # alpha loop done
-                filling_dict = {f'{ff:.4f}': alphas_p}
-                fillings_p.append(filling_dict)
+                # filling_dict = {f'{ff:.4f}': alphas_p}
+                fillings_p[f'{ff:.4f}'] = alphas_p
 
             # filling
-            thickness_dict = {f'{t:.4f}': fillings_p}
-            thickness_p.append(thickness_dict)
+            # thickness_dict = {f'{t:.4f}': fillings_p}
+            thickness_p[f'{t:.4f}'] = fillings_p
 
         # thickness
-        periods_dict = {f'{ax:.4f}': thickness_p}
-        periods_p.append(periods_dict)
+        # periods_dict = {f'{ax:.4f}': thickness_p}
+        periods_p[f'{ax:.4f}'] = thickness_p
 
     # end of loops
 

@@ -13,7 +13,7 @@ name: WS₂
 dispersive: True
 material_path: Materials/WS2_Munkhbat2022.txt
 material_n_k: None
-pattern: Pattern(ax=0.700, ff=0.700, w=0.490, alpha=0.3, form=1.000, lattice=[[1.4, 0], [0, 0]])
+pattern: Pattern(ax=0.500, ff=0.700, w=0.350, alpha=0.3, form=1.000, lattice=[[1.0, 0], [0, 0]])
 description: TMD layer, WS₂.
 thickness: 0.01
 thickness_sub: 0
