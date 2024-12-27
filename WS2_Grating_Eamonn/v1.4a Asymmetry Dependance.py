@@ -635,7 +635,7 @@ def main() -> None:
     alphas = [0.1]
 
     periods = range_in(0.4, 0.8, 0.1)
-    thicknesses = range_in(0.01, 0.1, 0.04)
+    thicknesses = range_in(0.02, 0.1, 0.04)
     filling = range_in(0.7, 0.9, 0.1)
     alphas = range_in(.0, 0.3, 0.01)
 
