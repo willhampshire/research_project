@@ -423,7 +423,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
             raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{wa:.3f} or {axa - w:.3f} < {min_detail:.3f}")
+                                     exceeded=f"{wa:.3f} or {axa - wa:.3f} < {min_detail:.3f}")
 
     if (w<min_detail) or ((ax-w)<min_detail):
         #sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")

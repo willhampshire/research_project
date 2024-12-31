@@ -102,9 +102,10 @@ E=1.23987/lbda
 # %% Wave_vector
 # N_k=701
 N_k=N
-k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
+kmax=7
+k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
 ky=0.000 #mu-1
-kmax=6.7
+
 # %% Common parameters
 N_ord=7 #Choice of the number of orders taken into account during simulation, recommendation: 7 for 1D, 50 for 2D
 polar=2 #Polarization of incident wave: 1-> x, 2-> y, 3->L, 4->R, 5->s, 6->p, 7->45°, 8->-45°, 0-> All 6 polarizations (H,V,D,A,L,R) for the Stoke parameter
