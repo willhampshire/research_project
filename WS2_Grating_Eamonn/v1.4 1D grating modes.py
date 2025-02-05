@@ -615,22 +615,22 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.46]
-    # thicknesses = [0.035]
-    # filling = [0.78]
+    periods = [0.8]
+    thicknesses = [0.06]
+    filling = [0.8]
 
-    periods = range_in(0.3, 0.6, 0.05)
-    thicknesses = range_in(0.02, 0.1, 0.02)
-    filling = range_in(0.7, 0.9, 0.05)
+    # periods = range_in(0.3, 0.6, 0.05)
+    # thicknesses = range_in(0.02, 0.1, 0.02)
+    # filling = range_in(0.7, 0.9, 0.05)
 
     alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
 
-    periods = range_in(0.4, 0.8, 0.1)
-    thicknesses = range_in(0.01, 0.06, 0.01)
-    filling = range_in(0.7, 0.9, 0.1)
-    alphas = range_in(.0, 0.3, 0.1)
-    alphas = [0.1, 0.2, 0.3]
+    # periods = range_in(0.4, 0.8, 0.1)
+    # thicknesses = range_in(0.01, 0.06, 0.01)
+    # filling = range_in(0.7, 0.9, 0.1)
+    alphas = range_in(.0, 0.3, 0.01)
+    # alphas = [0.1, 0.2, 0.3]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -648,7 +648,7 @@ def main() -> None:
                     iterations += 1
                     try:
                         run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'9 (alpha {alpha:.2f})')
+                            alpha=alpha, experiment_suf=f'9.1 (alpha {alpha:.2f})')
 
                     except SizeLimitException as e:
                         print(e.message, e.exceeded)
