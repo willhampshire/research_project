@@ -600,6 +600,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
     # plt.show()
 
+    plt.clf()
 
     # print("*** SUMMARY ***")
     # print(swg.summary_txt())
@@ -629,14 +630,14 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.70]
-    thicknesses = [0.01]
-    filling = [0.7]
+    periods = [0.8]
+    thicknesses = [0.06]
+    filling = [0.8]
     alphas = [0.1]
 
-    periods = range_in(0.4, 0.8, 0.1)
-    thicknesses = range_in(0.01, 0.06, 0.01)
-    filling = range_in(0.7, 0.9, 0.1)
+    # periods = range_in(0.4, 0.8, 0.1)
+    # thicknesses = range_in(0.01, 0.06, 0.01)
+    # filling = range_in(0.7, 0.9, 0.1)
     alphas = range_in(.0, 0.3, 0.01)
 
 
@@ -661,7 +662,7 @@ def main() -> None:
 
                     try:
                         profile = run_simulation(N=200, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'1')
+                            alpha=alpha, experiment_suf=f'1a')
 
                         # add profile as list to dict/json structure
                         profile_flat = profile.flatten().tolist() # 1D so can just flatten
