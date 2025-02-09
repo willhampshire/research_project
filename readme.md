@@ -9,8 +9,8 @@ Python 3.10(.11).
 
 Install requirements with ```pip install -r requirements.txt```.
 
-Compiled S4 from source. I would not reccomend with the original branch (tricky and no up to date documentation). 
-Instead try one of the newer forks, phoebe-p/S4 and marcus-o/S4.
+Compiled S4 from source. Would not recommend compiling from the original branch (was tricky, no good documentation). 
+Instead, try one of the newer forks, phoebe-p/S4 and marcus-o/S4.
 
 ## Scripts
 Run `vx.x 1D grating modes.py` in `WS2_Grating_Eamonn/Results` script to generate simulations (adjust parameter space via main loop entry point). 
@@ -31,8 +31,9 @@ Defines the periodic structure of a patterned layer, including the period, filli
 Represents a material in the waveguide, with support for dispersive and non-dispersive materials. 
 It includes methods to assign patterns and create editable layers.
 Assign `Pattern` object to the `.pattern` attribute to create the grating.
-Layers are just Materials but with a thickness.
+`Layers` objects are just `Materials` assigned a thickness.
 
 ### `Waveguide`
-Holds a stack of material layers, forming the waveguide stack.
+Holds a stack of material layers, forming the waveguide stack. Has export method fully compatible with the same
+functions as the original script.
 

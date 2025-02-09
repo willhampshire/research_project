@@ -122,7 +122,11 @@ E=1.23987/lbda
 N_k=N
 
 ky=0.000 #mu-1
-kmax=5
+
+
+kmax=10
+
+
 k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
 # %% Common parameters
 N_ord=15 #Choice of the number of orders taken into account during simulation, recommendation: 7 for 1D, 50 for 2D

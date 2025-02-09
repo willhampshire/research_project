@@ -419,13 +419,13 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # check wire and track detail level isnt smaller than 100nm
     if alpha != None:
         wa = w * (1-alpha)
-        axa = w * (1-alpha)
+        axa = ax * (1-alpha)
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
             raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{wa:.3f} or {axa - w:.3f} < {min_detail:.3f}")
+                                     exceeded=f"{wa:.3f} or {axa - wa:.3f} < {min_detail:.3f}")
 
-    if (w<0.1) or ((ax-w)<min_detail):
+    if (w<min_detail) or ((ax-w)<min_detail):
         #sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
         raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
                                  exceeded=f"{w:.3f} or {ax-w:.3f} < {min_detail:.3f}")
@@ -444,7 +444,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     swg = Waveguide() # make Waveguide object
     swg.write_material_order([air,WS2,SiO2,Si]) # simply the materials list, but instead with Material objects
     # could be made redundant by adding automatically when adding the layers, however easier to set order for testing
-    # will throw error if layer used but its material is not added here
+    # will throw error if a layer used but its material is not added here
 
     swg.add_layer(air_layer)
     swg.add_layer(WS2_layer)
@@ -625,7 +625,12 @@ def main() -> None:
 
     alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
-    alphas = [.0]
+
+    periods = range_in(0.4, 0.8, 0.1)
+    thicknesses = range_in(0.01, 0.06, 0.01)
+    filling = range_in(0.7, 0.9, 0.1)
+    alphas = range_in(.0, 0.3, 0.1)
+    alphas = [0.1, 0.2, 0.3]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -643,10 +648,10 @@ def main() -> None:
                     iterations += 1
                     try:
                         run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=None, experiment_suf=f'5.2 (alpha {alpha:.2f})')
+                            alpha=alpha, experiment_suf=f'9 (alpha {alpha:.2f})')
 
                     except SizeLimitException as e:
-                        print(e.message)
+                        print(e.message, e.exceeded)
                         continue # skip current iteration if features <100nm
 
                     finally:
