@@ -6,8 +6,7 @@ import re
 import pandas as pd
 import numpy as np
 
-# fix - things become misaligned when using navigation
-# replace incrament/decrament with dropdown, or something
+# clear all when changing project directories
 
 class ImageBrowserApp:
     def __init__(self, root):
@@ -305,6 +304,12 @@ class ImageBrowserApp:
 
     def load_project_folder(self, initial=False):
         """Load the project folder, with an initial directory prompt."""
+        # clear old data
+        self.image_paths.clear()
+        self.dimensions = {'img': [], 't': [], 'ax': [], 'ff': []}
+        self.dimensions_df = pd.DataFrame(self.dimensions)
+        self.third_var_loc = 0  # Reset third variable location
+
         if initial:
             # Use the default directory on the first load
             initial_dir = self.default_project_dir
@@ -314,6 +319,7 @@ class ImageBrowserApp:
 
         # Prompt the user to select the Results folder
         selected_folder = filedialog.askdirectory(title="Select Project Folder", initialdir=initial_dir)
+
 
         if selected_folder:
             self.project_folder = Path(selected_folder)
