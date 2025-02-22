@@ -556,48 +556,48 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     dynamic_folder = results_dir / project_name / (details + f' N={N}')
     dynamic_folder.mkdir(exist_ok=True, parents=True)
 
-    images_folder = dynamic_folder / "images"
-    data_folder = dynamic_folder / "data"
-    images_folder.mkdir(exist_ok=True)
-    data_folder.mkdir(exist_ok=True)
+    # images_folder = dynamic_folder / "images"
+    # data_folder = dynamic_folder / "data"
+    # images_folder.mkdir(exist_ok=True)
+    # data_folder.mkdir(exist_ok=True)
 
-    np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
+    #
+    # R_data=np.column_stack([lbda, R])
+    # R_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_data])
+    # A_data=np.column_stack([lbda, A])
+    # A_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_data])
+    # T_data=np.column_stack([lbda, T])
+    # T_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_data])
+    #
+    # R_sub_data=np.column_stack([lbda, R_sub])
+    # R_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_sub_data])
+    # A_sub_data=np.column_stack([lbda, A_sub])
+    # A_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_sub_data])
+    # T_sub_data=np.column_stack([lbda, T_sub])
+    # T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
 
-    R_data=np.column_stack([lbda, R])
-    R_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_data])
-    A_data=np.column_stack([lbda, A])
-    A_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_data])
-    T_data=np.column_stack([lbda, T])
-    T_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_data])
 
-    R_sub_data=np.column_stack([lbda, R_sub])
-    R_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_sub_data])
-    A_sub_data=np.column_stack([lbda, A_sub])
-    A_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_sub_data])
-    T_sub_data=np.column_stack([lbda, T_sub])
-    T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_R.csv"), R_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_A.csv"), A_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_T.csv"), T_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_R_sub.csv"), R_sub_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_A_sub.csv"), A_sub_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_T_sub.csv"), T_sub_data, delimiter=',')
 
+    # info_file_path = data_folder / f"INFO {project_name} - {details}.txt"
+    # info_csv_file_path = data_folder / f"INFO {project_name} - {details}.csv"
+    # with open(info_file_path, 'w') as f:
+    #     f.write(swg.summary_txt())
 
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_R.csv"), R_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_A.csv"), A_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_T.csv"), T_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_R_sub.csv"), R_sub_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_A_sub.csv"), A_sub_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_T_sub.csv"), T_sub_data, delimiter=',')
-
-    info_file_path = data_folder / f"INFO {project_name} - {details}.txt"
-    info_csv_file_path = data_folder / f"INFO {project_name} - {details}.csv"
-    with open(info_file_path, 'w') as f:
-        f.write(swg.summary_txt())
-
-    swg.summary_csv().to_csv(info_csv_file_path, index=False)
+    # swg.summary_csv().to_csv(info_csv_file_path, index=False)
 
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
     # if alpha != None:
     #     title_name += f" {greek.alpha}={alpha:.3f}"
 
-    plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
+    # plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
     # plt.show()
 
     plt.clf()
@@ -671,7 +671,7 @@ def main() -> None:
 
                     except SizeLimitException as sle:
                         print(sle.message, sle.exceeded)
-                        continue # skip current iteration if features <100nm
+                        continue # skip current iteration if features less than min_detail
 
                     except Exception as e:
                         print(e)
