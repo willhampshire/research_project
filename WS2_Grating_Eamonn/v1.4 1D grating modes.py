@@ -336,14 +336,17 @@ def time_it(func):
 # main function
 @time_it
 def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:float|None=None,
-                   experiment_suf:str=None):
+                   experiment_suf:str=None, min_detail:float=0.1):
     """
-    Main sim function.
-    :param N simulation resolution
-    :param period :float
-    :param thickness_pattern :float
-    :param filling :float
-    :return: None
+    Main simulation function. Assume all units micron.
+    :param N: resolution of simulation
+    :param period: [micron]
+    :param thickness: [micron]
+    :param filling:
+    :param alpha: asymmetry factor
+    :param experiment_suf: name the sim with a suffix
+    :param min_detail: minimum detail that can be fabricated [micron] default 0.1 um
+    :return:
     """
 
     lbda_min = 1240 / 2.2 # y limits
@@ -361,7 +364,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     polar=2 #Polarization of incident wave: 1-> x, 2-> y, 3->L, 4->R, 5->s, 6->p, 7->45°, 8->-45°, 0-> All 6 polarizations (H,V,D,A,L,R) for the Stoke parameter
 
     # demorized gratings - 15, otherwise - 7 (regular periodic 1D simulation)
-    if alpha != None:
+    if (alpha != None) or (float(alpha) != float(0)):
         N_ord = 15
         lattice_u_factor = 2 # double period grating
     else:
@@ -402,9 +405,6 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    material_path='Materials/WS2_Munkhbat2022.txt',
                    # 'Materials/WSe2_Zotev.txt' 'Materials/WS2_Munkhbat2022.txt'
                    description=f"TMD layer, WS{phys.sub_2}.")
-
-
-    min_detail = 100/1000  # 100 nm
 
 
     # use legacy variable names from here
@@ -615,29 +615,28 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.8]
-    thicknesses = [0.06]
-    filling = [0.8]
+    # periods = [0.8]
+    # thicknesses = [0.06]
+    # filling = [0.8]
 
     # periods = range_in(0.3, 0.6, 0.05)
     # thicknesses = range_in(0.02, 0.1, 0.02)
     # filling = range_in(0.7, 0.9, 0.05)
 
-    alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
+    # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
 
-    # periods = range_in(0.4, 0.8, 0.1)
-    # thicknesses = range_in(0.01, 0.06, 0.01)
-    # filling = range_in(0.7, 0.9, 0.1)
-    alphas = range_in(.0, 0.3, 0.01)
-    # alphas = [0.1, 0.2, 0.3]
+    periods = range_in(0.1, 0.9, 0.2)
+    thicknesses = range_in(0.01, 0.08, 0.01)
+    filling = range_in(0.8, 0.9, 0.05)
+    # alphas = range_in(.0, 0.3, 0.01)
+    alphas = [.0]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
           f"{num_loops:.1f}mins for N=75 order 15, {2.1*num_loops:.1f}mins for N=125 order 15")
     print(f"PERIODS {periods}\nTHICKNESSES {thicknesses}\nFILLINGS {filling}")
     time.sleep(1)
-
 
 
     # change the values of N, experiment suffix, alpha for each batch
@@ -648,7 +647,7 @@ def main() -> None:
                     iterations += 1
                     try:
                         run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'9.1 (alpha {alpha:.2f})')
+                            alpha=alpha, experiment_suf=f'10.1 min_detail=50nm (alpha {alpha:.2f})', min_detail=50/1000)
 
                     except SizeLimitException as e:
                         print(e.message, e.exceeded)
