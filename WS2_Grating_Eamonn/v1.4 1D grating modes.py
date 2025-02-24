@@ -626,9 +626,9 @@ def main() -> None:
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
 
-    periods = range_in(0.1, 0.9, 0.2)
-    thicknesses = range_in(0.01, 0.08, 0.01)
-    filling = range_in(0.8, 0.9, 0.05)
+    periods = range_in(0.3, 0.5, 0.1/2)
+    thicknesses = range_in(0.04, 0.1, 0.01)
+    filling = range_in(0.78, 0.84, 0.02)
     # alphas = range_in(.0, 0.3, 0.01)
     alphas = [.0]
 
@@ -646,8 +646,11 @@ def main() -> None:
                 for alpha in alphas:
                     iterations += 1
                     try:
-                        run_simulation(N=125, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'10.1 min_detail=50nm (alpha {alpha:.2f})', min_detail=50/1000)
+                        min_detail = 50/1000
+                        run_simulation(
+                            N=125, period=ax, thickness=t, filling=ff, alpha=alpha, min_detail=min_detail,
+                            experiment_suf=f'[10.2] min_detail={min_detail*1000:.0f}nm α={alpha:.2f}'
+                            )
 
                     except SizeLimitException as e:
                         print(e.message, e.exceeded)
