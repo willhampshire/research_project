@@ -192,16 +192,14 @@ def px_kx_convert(values, kmax, Nk, order: int = 0):
 
 cwd = Path(os.getcwd())
 
-results_top_dir = [cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.00)',
-                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.01)',
-                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.05)',
-                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.10)',
-                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.15)',
-                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.20)']
+results_top_dir = [cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 9 (alpha 0.00)',
+                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 9 (alpha 0.10)',
+                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 9 (alpha 0.20)',
+                   cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 9 (alpha 0.30)']
 
 # results_top_dir = [cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 8 (alpha 0.00)']
 
-full_dataset_fname = cwd / 'fano_profiles' / 'fano_npy_6D.npy' # np file format supports saving 6d array as is
+full_dataset_fname = cwd / 'fano_profiles' / 'fano_npy_6D_sim9.npy' # np file format supports saving 6d array as is
 
 
 if __name__ == '__main__':
