@@ -407,7 +407,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    description=f"TMD layer, WS{phys.sub_2}.")
 
 
-    min_detail = 100/1000  # 100 nm is 0.1 um
+    min_detail = 50/1000  # 100 nm is 0.1 um
 
 
     # use legacy variable names from here
@@ -421,17 +421,17 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     # check wire and track detail level isnt smaller than 100nm
     if alpha != None:
-        wa = w * (1-alpha)
-        axa = ax * (1-alpha)
+        wa = w * (1 - alpha)
+        axa = ax * (1 - alpha)
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
-            raise SizeLimitException(message=f"ALPHA {alpha} - Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{wa:.3f} or {axa - w:.3f} < {min_detail:.3f}")
+            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
+                                     exceeded=f"{wa:.3f} or {axa - wa:.3f} < {min_detail:.3f}")
 
-    if (w<min_detail) or ((ax-w)<min_detail):
-        #sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
+    if (w < min_detail) or ((ax - w) < min_detail):
+        # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
         raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                 exceeded=f"{w:.3f} or {ax-w:.3f} < {min_detail:.3f}")
+                                 exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
 
 
     # make the layers
@@ -635,10 +635,10 @@ def main() -> None:
     filling = [0.8]
     alphas = [0.1]
 
-    # periods = range_in(0.4, 0.8, 0.1)
-    # thicknesses = range_in(0.01, 0.06, 0.01)
+    periods = range_in(0.3, 0.5, 0.1)
+    thicknesses = range_in(0.04, 0.08, 0.02)
     # filling = range_in(0.7, 0.9, 0.1)
-    alphas = range_in(.0, 0.3, 0.01)
+    alphas = range_in(.0, 0.3, 0.05)
 
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
@@ -662,7 +662,7 @@ def main() -> None:
 
                     try:
                         profile = run_simulation(N=200, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'1a')
+                            alpha=alpha, experiment_suf=f'2')
 
                         # add profile as list to dict/json structure
                         profile_flat = profile.flatten().tolist() # 1D so can just flatten
@@ -677,7 +677,7 @@ def main() -> None:
                         print(e)
 
                     finally:
-                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
+                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f} α={alpha:.3f}")
 
                 # alpha loop done
                 # filling_dict = {f'{ff:.4f}': alphas_p}
