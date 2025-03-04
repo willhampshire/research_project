@@ -632,6 +632,14 @@ def main() -> None:
     # alphas = range_in(.0, 0.3, 0.01)
     alphas = [.0]
 
+
+    ### TEMP ###
+    filling = [0.8]
+    periods = range_in(0.3, 0.6, 0.1)
+    thicknesses = range_in(0.04, 0.08, 0.01)
+    # alphas = range_in(.0, 0.3, 0.01)
+    ### TEMP ###
+
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
           f"{num_loops:.1f}mins for N=75 order 15, {2.1*num_loops:.1f}mins for N=125 order 15")
@@ -649,7 +657,7 @@ def main() -> None:
                         min_detail = 50/1000
                         run_simulation(
                             N=125, period=ax, thickness=t, filling=ff, alpha=alpha, min_detail=min_detail,
-                            experiment_suf=f'[10.2] min_detail={min_detail*1000:.0f}nm α={alpha:.2f}'
+                            experiment_suf=f'[10.3] min_detail={min_detail*1000:.0f}nm α={alpha:.2f}'
                             )
 
                     except SizeLimitException as e:
