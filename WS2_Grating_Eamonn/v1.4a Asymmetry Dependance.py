@@ -556,41 +556,42 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     dynamic_folder = results_dir / project_name / (details + f' N={N}')
     dynamic_folder.mkdir(exist_ok=True, parents=True)
 
-    # images_folder = dynamic_folder / "images"
-    # data_folder = dynamic_folder / "data"
-    # images_folder.mkdir(exist_ok=True)
-    # data_folder.mkdir(exist_ok=True)
+    images_folder = dynamic_folder / "images"
+    data_folder = dynamic_folder / "data"
+    images_folder.mkdir(exist_ok=True)
+    data_folder.mkdir(exist_ok=True)
 
-    # np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
-    #
-    # R_data=np.column_stack([lbda, R])
-    # R_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_data])
-    # A_data=np.column_stack([lbda, A])
-    # A_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_data])
-    # T_data=np.column_stack([lbda, T])
-    # T_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_data])
-    #
-    # R_sub_data=np.column_stack([lbda, R_sub])
-    # R_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_sub_data])
-    # A_sub_data=np.column_stack([lbda, A_sub])
-    # A_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_sub_data])
-    # T_sub_data=np.column_stack([lbda, T_sub])
-    # T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
+    np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
+
+    R_data=np.column_stack([lbda, R])
+    R_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_data])
+    A_data=np.column_stack([lbda, A])
+    A_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_data])
+    T_data=np.column_stack([lbda, T])
+    T_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_data])
+
+    R_sub_data=np.column_stack([lbda, R_sub])
+    R_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_sub_data])
+    A_sub_data=np.column_stack([lbda, A_sub])
+    A_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), A_sub_data])
+    T_sub_data=np.column_stack([lbda, T_sub])
+    T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
 
 
-    # np.savetxt(data_folder / (project_name + ' - ' + details + "_R.csv"), R_data, delimiter=',')
+    np.savetxt(data_folder / (project_name + ' - ' + details + f"_R_{alpha}.csv"), R_data, delimiter=',')
     # np.savetxt(data_folder / (project_name + ' - ' + details + "_A.csv"), A_data, delimiter=',')
     # np.savetxt(data_folder / (project_name + ' - ' + details + "_T.csv"), T_data, delimiter=',')
-    # np.savetxt(data_folder / (project_name + ' - ' + details + "_R_sub.csv"), R_sub_data, delimiter=',')
+    np.savetxt(data_folder / (project_name + ' - ' + details + f"_R_sub_{alpha}.csv"), R_sub_data, delimiter=',')
     # np.savetxt(data_folder / (project_name + ' - ' + details + "_A_sub.csv"), A_sub_data, delimiter=',')
     # np.savetxt(data_folder / (project_name + ' - ' + details + "_T_sub.csv"), T_sub_data, delimiter=',')
 
-    # info_file_path = data_folder / f"INFO {project_name} - {details}.txt"
-    # info_csv_file_path = data_folder / f"INFO {project_name} - {details}.csv"
-    # with open(info_file_path, 'w') as f:
-    #     f.write(swg.summary_txt())
+    info_file_path = data_folder / f"INFO {project_name} - {details} α={alpha}.txt"
+    info_csv_file_path = data_folder / f"INFO {project_name} - {details} α={alpha}.csv"
 
-    # swg.summary_csv().to_csv(info_csv_file_path, index=False)
+    with open(info_file_path, 'w') as f:
+        f.write(swg.summary_txt())
+
+    swg.summary_csv().to_csv(info_csv_file_path, index=False)
 
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
@@ -635,10 +636,10 @@ def main() -> None:
     filling = [0.8]
     alphas = [0.1]
 
-    periods = range_in(0.3, 0.5, 0.1)
-    thicknesses = range_in(0.04, 0.08, 0.02)
+    periods = range_in(0.3, 0.6, 0.1)
+    thicknesses = range_in(0.04, 0.08, 0.01)
     # filling = range_in(0.7, 0.9, 0.1)
-    alphas = range_in(.0, 0.3, 0.05)
+    alphas = range_in(.0, 0.3, 0.01)
 
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(alphas)
@@ -662,7 +663,7 @@ def main() -> None:
 
                     try:
                         profile = run_simulation(N=200, period=ax, thickness=t, filling=ff,
-                            alpha=alpha, experiment_suf=f'2')
+                            alpha=alpha, experiment_suf=f'2a')
 
                         # add profile as list to dict/json structure
                         profile_flat = profile.flatten().tolist() # 1D so can just flatten
