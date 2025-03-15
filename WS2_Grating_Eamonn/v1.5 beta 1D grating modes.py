@@ -38,7 +38,7 @@ class Pattern:
     Takes period, filling factor, position, size, form, angle
     pos and size use [x, y] component
     lattice takes [ [ux,uy] , [vx,vy] ]
-    alpha instigates a 2-element pattern list using itself and width_hole
+    alpha/beta instigates a 2-element pattern list using itself and width_hole across a double period
     """
     def __init__(self, period:float, filling:float, size:List[float], lattice:List[List[float]] | None = None,
                  alpha: float|None = None, beta: float|None = None,
@@ -302,7 +302,7 @@ class Waveguide:
     def export_RCWA_format(self, sub:bool, as_df:bool=None) -> List[List]:
         """
         Exports [material, layer, pattern] : List[List] for use with RCWA_spectrum function
-        :param sub: sets pattern to [] and thickness of grating (patterned layer) to 0 + reverts
+        :param sub: (substrate) sets pattern to [] and thickness of grating (patterned layer) to 0 for predetermined layer
         :param as_df: exports material, layer data as DF for easy readability
         :return: [material, layer, pattern]
         """
