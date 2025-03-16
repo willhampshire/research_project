@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+import json
 
 from Functions.argument_angle import argument_angle
 from Functions.RCWA_spectrum import RCWA_spectrum
@@ -372,8 +373,10 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # E=1.23987/lbda
 
     # k_scan=np.linspace(-6.7,6.7,N_k) #mu-1
-    kmax=5
-    k_scan=np.linspace(-kmax,kmax,N) #mu-1
+    # kmax=5
+    # k_scan=np.linspace(-kmax,kmax,N) #mu-1
+
+    k_scan = np.array([0])
 
     ky=0.000 #mu-1
 
@@ -382,7 +385,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # demorized gratings - 15, otherwise - 7 (regular periodic 1D simulation)
     if (alpha != None):
         N_ord = 15
-        lattice_u_factor = 2 # double period grating
+        lattice_u_factor = 2  # double period grating
     elif (beta != None):
         N_ord = 15
         lattice_u_factor = 2  # double period grating
@@ -426,6 +429,9 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    description=f"TMD layer, WS{phys.sub_2}.")
 
 
+    # min_detail = 50/1000  # 100 nm is 0.1 um
+
+
     # use legacy variable names from here
 
     ax=period # range .2 ~ .6
@@ -437,8 +443,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     # check wire and track detail level isnt smaller than 100nm
     if alpha != None:
-        wa = w * (1-alpha)
-        axa = ax * (1-alpha)
+        wa = w * (1 - alpha)
+        axa = ax * (1 - alpha)
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
             raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
@@ -447,7 +453,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
         if w < min_detail:
             raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
                                      exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
-        if ax-beta < min_detail:
+        if ax - beta < min_detail:
             raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
                                      exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
 
@@ -494,6 +500,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     A_sub=np.zeros((lbda.size,k_scan.size),dtype=float)
     R_sub=np.zeros((lbda.size,k_scan.size),dtype=float)
     T_sub=np.zeros((lbda.size,k_scan.size),dtype=float)
+
+
     for i_k in range(0, k_scan.size):
         kx = k_scan[i_k]
         k_inplan = math.sqrt(kx ** 2 + ky ** 2)
@@ -550,21 +558,25 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                f"FF={FF:.2f}")
 
 
-    project_name = f'{swg.get_summary_name()} {experiment_suf}'
+    project_name = f'ASYM {swg.get_summary_name()} {experiment_suf}'
     # project_name = 'feature testing'
 
     title_name = f"{project_name}\n{details}"
     plt.rcParams['font.size'] = '16'
 
-    m1 = r'$^{-1}$'
-    fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
-    pcm = axs.pcolor(k_scan,1.240/lbda,signalR,cmap='viridis',clim=(0,1))
-    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
-    # y_eV = 1.45    # reference line at 1.45eV
-    # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
-    cbar =fig.colorbar(pcm,location='right')
-    cbar.set_label('Reflectivity contrast')
-    plt.minorticks_on()
+    # m1 = r'$^{-1}$'
+    # fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
+    # pcm = axs.pcolor(k_scan,1.240/lbda,signalR,cmap='viridis',clim=(0,1))
+    # axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]',xlim=(-kmax,kmax),ylim=(1240/lbda_max, 1240/lbda_min), ylabel='Photon Energy [eV]',title=title_name)
+    # # y_eV = 1.45    # reference line at 1.45eV
+    # # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
+    # cbar =fig.colorbar(pcm,location='right')
+    # cbar.set_label('Reflectivity contrast')
+    # plt.minorticks_on()
+
+    plt.plot(1.24/lbda, signalR, '-o')
+    plt.xlabel('Energy [eV]')
+    plt.ylabel('Reflectivty [arb]')
 
     cwd = Path(os.getcwd())
     results_dir = cwd / "Results"
@@ -594,16 +606,21 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     T_sub_data=np.column_stack([lbda, T_sub])
     T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
 
+    if alpha:
+        asym = alpha
+    elif beta:
+        asym = beta
 
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_R.csv"), R_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_A.csv"), A_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_T.csv"), T_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_R_sub.csv"), R_sub_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_A_sub.csv"), A_sub_data, delimiter=',')
-    np.savetxt(data_folder / (project_name + ' - ' + details + "_T_sub.csv"), T_sub_data, delimiter=',')
+    np.savetxt(data_folder / (project_name + ' - ' + details + f"_R_{asym}.csv"), R_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_A.csv"), A_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_T.csv"), T_data, delimiter=',')
+    np.savetxt(data_folder / (project_name + ' - ' + details + f"_R_sub_{asym}.csv"), R_sub_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_A_sub.csv"), A_sub_data, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + "_T_sub.csv"), T_sub_data, delimiter=',')
 
-    info_file_path = data_folder / f"INFO {project_name} - {details}.txt"
-    info_csv_file_path = data_folder / f"INFO {project_name} - {details}.csv"
+    info_file_path = data_folder / f"INFO {project_name} - {details} asym={asym}.txt"
+    info_csv_file_path = data_folder / f"INFO {project_name} - {details} asym={asym}.csv"
+
     with open(info_file_path, 'w') as f:
         f.write(swg.summary_txt())
 
@@ -611,17 +628,21 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
-    if alpha != None:
-        title_name += f" {greek.alpha}={alpha:.3f}"
-    elif beta != None:
-        title_name += f" {greek.beta}={beta:.3f}"
+    # if alpha != None:
+    #     title_name += f" {greek.alpha}={alpha:.3f}"
 
-    plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
-    plt.show()
+    # plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
+    # plt.show()
 
+    plt.clf()
 
     # print("*** SUMMARY ***")
     # print(swg.summary_txt())
+
+    global json_dir
+    json_dir = results_dir / project_name
+
+    return signalR
 
 
 def range_in(start:float, stop:float, step:float) -> List[float]:
@@ -632,23 +653,22 @@ def range_in(start:float, stop:float, step:float) -> List[float]:
     """
     n_points = round(((stop-start)/step),0) +1
     linspace = list(np.linspace(start, stop, int(n_points)))
-    return [round(num, 6) for num in linspace]
+    return list([round(num, 6) for num in linspace])
 
 # main entry point
 @time_it
 def main() -> None:
     iterations = 0
-
     # periods = [0.2, 0.4, 0.6]
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.35]
-    thicknesses = [0.01, 0.02]
-    filling = [0.855]
+    # periods = [0.3, 0.4, 0.5, 0.6]
+    # thicknesses = [0.01, 0.02, 0.03]
+    filling = [0.8]
 
-    # periods = range_in(0.3, 0.6, 0.05)
-    # thicknesses = range_in(0.02, 0.1, 0.02)
+    periods = range_in(0.3, 0.4, 0.05)
+    thicknesses = range_in(0.01, 0.05, 0.01)
     # filling = range_in(0.7, 0.9, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
@@ -658,10 +678,8 @@ def main() -> None:
     # thicknesses = range_in(0.04, 0.1, 0.01)
     # filling = range_in(0.78, 0.84, 0.02)
     # alphas = range_in(.0, 0.3, 0.01)
-    alphas = [.0]
-    betas = [0.05]
 
-    asyms = betas
+    asyms = range_in(0., 0.1, 0.01)
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -670,26 +688,70 @@ def main() -> None:
     time.sleep(1)
 
 
-    # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
+    # change the values of N, experiment suffix, alpha for each batch
+    min_detail = 50 / 1000
+
+    periods_p = {} # periods profiles
     for ax in periods:
+        thickness_p = {}
         for t in thicknesses:
+            fillings_p = {}
             for ff in filling:
+                asym_p = {}
                 for asym in asyms:
                     iterations += 1
+
                     try:
-                        min_detail = 50/1000
-                        run_simulation(
-                            N=125, period=ax, thickness=t, filling=ff, beta=asym, min_detail=min_detail,
-                            experiment_suf=f'[10.4] min_detail={min_detail*1000:.0f}nm β={asym:.2f}'
+                        # DO NOT INCLUDE THE ASYMMETRY PARAMTER IN THE EXPERIMENT SUFFIX (next script requires same dir)
+                        profile = run_simulation(
+                            N=125, period=ax, thickness=t, filling=ff,
+                            beta=asym,
+                            min_detail=min_detail,
+                            experiment_suf=f'[10.5] min_detail={min_detail*1000:.0f}nm'
                             )
 
-                    except SizeLimitException as e:
-                        print(e.message, e.exceeded)
-                        continue # skip current iteration if features <100nm
+                        # add profile as list to dict/json structure
+                        profile_flat = profile.flatten().tolist() # 1D so can just flatten
+                        # alpha_dict = {f'{alpha:.4f}': profile_flat}
+                        asym_p[f'{asym:.4f}'] = profile_flat
+
+                    except SizeLimitException as sle:
+                        print(sle.message, sle.exceeded)
+                        continue # skip current iteration if features less than min_detail
+
+                    except Exception as e:
+                        print(e)
 
                     finally:
-                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
+                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f} asym={asym:.3f}")
 
+                # alpha loop done
+                # filling_dict = {f'{ff:.4f}': alphas_p}
+                fillings_p[f'{ff:.4f}'] = asym_p
+
+            # filling
+            # thickness_dict = {f'{t:.4f}': fillings_p}
+            thickness_p[f'{t:.4f}'] = fillings_p
+
+        # thickness
+        # periods_dict = {f'{ax:.4f}': thickness_p}
+        periods_p[f'{ax:.4f}'] = thickness_p
+
+    # end of loops
+
+    # keys are strings with :.4f specifier
+    print(periods_p)
+
+    global json_dir
+    if json_dir:
+        json_file = json_dir / 'summary_alpha.json'
+        with open(json_file, 'w') as file:
+            json.dump(periods_p, file, indent=4)
+
+
+
+
+json_dir: Path|None = None
 
 main()
 
