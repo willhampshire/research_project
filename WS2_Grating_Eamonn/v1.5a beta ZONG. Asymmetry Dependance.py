@@ -352,7 +352,8 @@ def time_it(func):
 # main function
 @time_it
 def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:float|None=None, beta:float|None=None,
-                   experiment_suf:str=None, min_detail:float=0.1):
+                   experiment_suf:str=None, min_detail:float=0.1,
+                   e_max:float=2.2, e_min:float=1.2):
     """
     Main simulation function. Assume all units micron.
     :param N: resolution of simulation
@@ -363,11 +364,13 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     :param beta: fixed asymmetry [micron]
     :param experiment_suf: name the sim with a suffix
     :param min_detail: minimum detail that can be fabricated [micron] default 0.1 um
+    :param e_max: max energy [eV]
+    :param e_min: min energy [eV]
     :return:
     """
 
-    lbda_min = 1240 / 2.2 # y limits
-    lbda_max = 1240 / 1.2
+    lbda_min = 1240 / e_max # y limits
+    lbda_max = 1240 / e_min
 
     lbda = np.linspace(lbda_min/1000,lbda_max/1000,N)
     # E=1.23987/lbda
@@ -606,9 +609,11 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     T_sub_data=np.column_stack([lbda, T_sub])
     T_sub_data=np.row_stack([np.concatenate([[np.nan],k_scan]), T_sub_data])
 
-    if alpha:
+    if alpha != None:
+        assert beta == None
         asym = alpha
-    elif beta:
+    elif beta != None:
+        assert alpha == None
         asym = beta
 
     np.savetxt(data_folder / (project_name + ' - ' + details + f"_R_{asym}.csv"), R_data, delimiter=',')
@@ -690,6 +695,9 @@ def main() -> None:
 
     # change the values of N, experiment suffix, alpha for each batch
     min_detail = 50 / 1000
+    e_max = 2.48
+    e_min = 1.2
+    experiment_num = str(10.6)
 
     periods_p = {} # periods profiles
     for ax in periods:
@@ -707,7 +715,9 @@ def main() -> None:
                             N=125, period=ax, thickness=t, filling=ff,
                             beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[10.5] min_detail={min_detail*1000:.0f}nm'
+                            experiment_suf=f'[{experiment_num}] e_max={e_max}',
+                            e_max=e_max,
+                            e_min=e_min
                             )
 
                         # add profile as list to dict/json structure
@@ -720,7 +730,9 @@ def main() -> None:
                         continue # skip current iteration if features less than min_detail
 
                     except Exception as e:
-                        print(e)
+                        print(f'* WARNING *\n{e}\n* WARNING *')
+                        time.sleep(5)
+
 
                     finally:
                         print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f} asym={asym:.3f}")
@@ -742,13 +754,20 @@ def main() -> None:
     # keys are strings with :.4f specifier
     print(periods_p)
 
+    meta_json = {'e_max': e_max,
+                 'e_min': e_min,
+                 'asyms': asyms,
+                 'min_detail': min_detail}
+
     global json_dir
     if json_dir:
         json_file = json_dir / 'summary_alpha.json'
         with open(json_file, 'w') as file:
             json.dump(periods_p, file, indent=4)
 
-
+        json_file_meta = json_dir / 'summary_alpha_meta.json'
+        with open(json_file_meta, 'w') as file:
+            json.dump(meta_json, file, indent=4)
 
 
 json_dir: Path|None = None
