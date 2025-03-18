@@ -684,7 +684,7 @@ def main() -> None:
     # filling = range_in(0.78, 0.84, 0.02)
     # alphas = range_in(.0, 0.3, 0.01)
 
-    asyms = range_in(0., 0.1, 0.01)
+    asyms = range_in(0., 0.1, (0.01/2))
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -695,7 +695,7 @@ def main() -> None:
 
     # change the values of N, experiment suffix, alpha for each batch
     min_detail = 50 / 1000
-    e_max = 2.48
+    e_max = 3.1
     e_min = 1.2
     experiment_num = str(10.6)
 

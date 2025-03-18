@@ -86,13 +86,13 @@ etha=1
 t_TMD1=etha*t_tot
 t_WS2_unetched=t_tot-t_TMD1
 
-ax=0.42 #um
-FF=0.73
+ax=0.35 #um
+FF=0.8
 wg=FF*ax #hole size
 wh=(1-FF)*ax #groove size
-alpha=0.6  #Double period perturbation
+alpha=0.  #Double period perturbation
 
-N=100
+N=75
 
 # Plot_refractive_indices(lbda,material) #f9 to plot refractive indices
 # %% Spectral range of the starting point    
@@ -124,7 +124,7 @@ N_k=N
 ky=0.000 #mu-1
 
 
-kmax=10
+kmax=5
 
 
 k_scan=np.linspace(-kmax,kmax,N_k) #mu-1
@@ -180,11 +180,20 @@ layer_sub.append([t_substrate_1,4]) # Subtrate 1
 
 
 # Double period with alpha=0
+# pattern=[]
+# pattern.append([2,1,1,[wh*(1+alpha)/2,0],[wh*(1+alpha),0],0])
+# pattern.append([2,1,1,[wh*(1-alpha)/2+ax*(1+alpha),0],[wh*(1-alpha),0],0])
+# u=[2*ax,0] # Lattices (two unit vectors of the Bravais lattice), defined with u=[u_x,u_y] and v=[v_x,v_y]  NOTE: for 1D grating, the simulation will be calculated with u=(ux,0) and v=(0,0)
+# v=[0,0]
+
+delta = 50/1000
+
 pattern=[]
-pattern.append([2,1,1,[wh*(1+alpha)/2,0],[wh*(1+alpha),0],0])
-pattern.append([2,1,1,[wh*(1-alpha)/2+ax*(1+alpha),0],[wh*(1-alpha),0],0])
+pattern.append([2,1,1,[wh/2,0],[wh,0],0])
+pattern.append([2,1,1,[wh/2+ax-delta,0],[wh,0],0])
 u=[2*ax,0] # Lattices (two unit vectors of the Bravais lattice), defined with u=[u_x,u_y] and v=[v_x,v_y]  NOTE: for 1D grating, the simulation will be calculated with u=(ux,0) and v=(0,0)
 v=[0,0]
+
 
 # %% For loop
 A=np.zeros((lbda.size,k_scan.size),dtype=float)

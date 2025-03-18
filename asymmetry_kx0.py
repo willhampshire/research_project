@@ -8,17 +8,33 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
 from icecream import ic
+import time
 
 
 cwd = Path(os.getcwd())
 results_dir = cwd / "WS2_Grating_Eamonn" / "Results"
 results_dir.mkdir(exist_ok=True)
 
-project_folder = results_dir / 'ALPHA WS₂, SiO₂, Si 2a'
+project_folder = results_dir / 'ASYM WS₂, SiO₂, Si [10.6] e_max=3.1'
 json_path = project_folder / 'summary_alpha.json'
+meta_json_path = project_folder / 'summary_alpha_meta.json'
 
 with open(json_path, 'r') as file:
     data = json.load(file)
+
+with open(meta_json_path, 'r') as file:
+    metadata = json.load(file)
+
+print(metadata)
+time.sleep(1)
+
+# time.sleep(20)
+
+e_max = float(metadata['e_max'])
+e_min = float(metadata['e_min'])
+asyms_x_labels = np.array(metadata['asyms'], dtype=float)
+min_detail = float(metadata['min_detail'])
+
 
 data_df = pd.DataFrame(data)
 print(data_df.head())
@@ -26,31 +42,31 @@ data_df.info()
 
 
 # period, thickness, filling
-choose: List[float] = [0.3, 0.04, 0.8]
+# choose: List[float] = [0.3, 0.01, 0.8]
 
-choose_str = [f"{s:.4f}" for s in choose]
-print(choose_str)
+# choose_str = [f"{s:.4f}" for s in choose]
+# print(choose_str)
 
-alpha_layer = data[choose_str[0]][choose_str[1]][choose_str[2]]
-print(len(alpha_layer))
-
-x_axis_str = list(alpha_layer.keys())
-
-x_axis = [float(val) for val in x_axis_str]
-print(x_axis)
-y_data = np.array([alpha_layer[f'{x}'] for x in x_axis_str]).T
-
-
-df_reflectivity = pd.DataFrame(y_data)
-df_reflectivity.columns = x_axis
-df_reflectivity.index = np.linspace(2.2, 1.2, len(df_reflectivity.index))
-print(df_reflectivity.head())
-
-
+# alpha_layer = data[choose_str[0]][choose_str[1]][choose_str[2]]
+# print(len(alpha_layer))
+#
+# x_axis_str = list(alpha_layer.keys())
+#
+# x_axis = [float(val) for val in x_axis_str]
+# print(x_axis)
+# y_data = np.array([alpha_layer[f'{x}'] for x in x_axis_str]).T
+#
+#
+# df_reflectivity = pd.DataFrame(y_data)
+# df_reflectivity.columns = x_axis
+# df_reflectivity.index = np.linspace(e_max, e_min, len(df_reflectivity.index))
+# print(df_reflectivity.head())
 
 
-period = [0.3, 0.4, 0.5, 0.6]
-thickness = [0.04, 0.05, 0.06, 0.07, 0.08]
+
+
+period = [0.3, 0.35, 0.4]
+thickness = [0.01, 0.02, 0.03, 0.04, 0.05]
 filling = [0.8]
 
 
@@ -61,7 +77,7 @@ for p in period:
             choose: List[float] = [p,t,f]
             choose_str = [f"{s:.4f}" for s in choose]
 
-            choose_str_1 = 'Wavelength vs Alpha -'
+            choose_str_1 = 'Wavelength vs Asym param -'
             choose_str_2 = 'Line profiles -'
             for s in choose:
                 choose_str_1 += f' {s}'
@@ -80,10 +96,11 @@ for p in period:
             df_reflectivity = pd.DataFrame(y_data, columns=x_axis)
 
             # Set index as descending energy from 2.2 to 1.2 eV
-            df_reflectivity.index = np.linspace(2.2, 1.2, len(df_reflectivity.index))
+            df_reflectivity.index = np.linspace(e_max, e_min, len(df_reflectivity.index))
 
             # Convert to Wavelength (λ = 1.24 / E) & sort ascending
             df_reflec_wave = df_reflectivity.copy()
+            # df_reflec_energy = df_reflectivity.copy() use when requiring energy space
             df_reflec_wave.index = 1.24 / df_reflectivity.index
             df_reflec_wave = df_reflec_wave.sort_index(ascending=False)  # Ensure correct order
 
@@ -109,11 +126,12 @@ for p in period:
 
 
             # Labels & title
-            plt.xlabel("Alpha")
+            plt.xlabel("Asym")
             plt.ylabel("Wavelength [μm]")
-            plt.title(f"Wavelength vs Alpha - {choose}")
+            plt.title(f"Wavelength vs Asym - ax={choose[0]:.2f} t={choose[1]:.2f} ff={choose[2]:.2f}")
 
             # Save and show
+            os.makedirs(project_folder / 'images', exist_ok=True)
             image_path = project_folder / 'images' / choose_str_1
             plt.savefig(image_path, dpi=300)
             print(f"SAVED IMAGE TO {image_path}")
@@ -121,26 +139,7 @@ for p in period:
             plt.show()
 
 
-
-            def get_cols(columns: List[float], interval_ind: float) -> List[float]:
-                """
-                Use the columns list and index interval to get a new list of columns to plot (coarser steps)
-                :param columns: List[float]
-                :param interval_ind: float
-                :return: List[float]
-                """
-                index = 0
-                new_cols = []
-                while index < len(columns):
-                    new_cols.append(columns[index])
-                    index += interval_ind
-
-                return new_cols
-
-
-
-            alpha_plotting_interval = 5  # steps
-            new_cols = get_cols(df_reflectivity.columns, alpha_plotting_interval)
+            new_cols = asyms_x_labels
 
             ic(new_cols)
 
@@ -157,7 +156,7 @@ for p in period:
             ax.set_ylabel('Reflectivity [arb]')
 
             ax.minorticks_on()
-            ax.set_xlim([1.2, 2.2])
+            ax.set_xlim([e_min, e_max])
             # ax.set_ylim([0,1])
 
             ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
@@ -167,9 +166,9 @@ for p in period:
 
             plt.title(f"kx=0 line profiles of alpha (key) - {choose} [ax, t, ff]")
             # Save and show
-            image_path = project_folder / 'images' / choose_str_2
-            plt.savefig(image_path, dpi=300)
-            print(f"SAVED IMAGE TO {image_path}")
+            image_path_b = project_folder / 'images' / choose_str_2
+            plt.savefig(image_path_b, dpi=300)
+            print(f"SAVED IMAGE TO {image_path_b}")
 
             plt.show()
 
