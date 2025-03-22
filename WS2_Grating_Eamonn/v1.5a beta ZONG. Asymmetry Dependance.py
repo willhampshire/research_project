@@ -431,6 +431,10 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    # 'Materials/WSe2_Zotev.txt' 'Materials/WS2_Munkhbat2022.txt'
                    description=f"TMD layer, WS{phys.sub_2}.")
 
+    WS2_ZONG = Material(f'WS{phys.sub_2} Zong Lorentzian', dispersive=True,
+                   material_path='Materials/Zong et al. Lorentzian WS2/2eV_ex_lorentzian_Zong.csv',
+                   description=f"TMD layer, WS{phys.sub_2}. Lorenzian dielectric, exciton 2eV.")
+
 
     # min_detail = 50/1000  # 100 nm is 0.1 um
 
@@ -468,7 +472,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     # make the layers
     air_layer = air.make_layer(t=0, t_sub=0)
-    WS2_layer = WS2.make_layer(t=thickness, t_sub=0)
+    WS2_layer = WS2_ZONG.make_layer(t=thickness, t_sub=0)
     Si_layer = Si.make_layer(2)
     # Au_layer = Au.make_layer(0.150)
     SiO2_layer = SiO2.make_layer(0.29)
