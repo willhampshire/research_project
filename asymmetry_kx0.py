@@ -15,7 +15,7 @@ cwd = Path(os.getcwd())
 results_dir = cwd / "WS2_Grating_Eamonn" / "Results"
 results_dir.mkdir(exist_ok=True)
 
-project_folder = results_dir / 'ASYM WS₂, SiO₂, Si [10.6] e_max=3.1'
+project_folder = results_dir / 'ASYM WS₂ Zong Lorentzian, SiO₂, Si [11.1] e_max=2.48'
 json_path = project_folder / 'summary_alpha.json'
 meta_json_path = project_folder / 'summary_alpha_meta.json'
 

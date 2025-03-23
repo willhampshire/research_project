@@ -11,3 +11,5 @@ build/
 .DS_Store
 
 __pycache__
+
+*Old_sims.zip
