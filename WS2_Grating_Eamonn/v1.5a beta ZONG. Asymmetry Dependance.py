@@ -63,7 +63,8 @@ class Pattern:
 
     def __str__(self):
         return (f"Pattern(ax={self.period:.3f}, ff={self.filling:.3f}, "
-                f"w={self.width:.3f}, alpha={self.alpha}, form={self.form:.3f}, lattice={self.lattice})")
+                f"w={self.width:.3f}, w_h={self.width_hole:.3f}, alpha={self.alpha}, beta={self.beta}, "
+                f"form={self.form:.3f}, lattice={self.lattice})")
 
 
 class Material:
@@ -481,9 +482,12 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     WS2_layer.pattern = Pattern(ax, FF, size=[ax-w,0], lattice=[u,v], alpha=alpha, beta=beta)
 
     swg = Waveguide() # make Waveguide object
-    swg.write_material_order([air,WS2,SiO2,Si]) # simply the materials list, but instead with Material objects
+    swg.write_material_order([air,WS2_ZONG,SiO2,Si]) # simply the materials list, but instead with Material objects
     # could be made redundant by adding automatically when adding the layers, however easier to set order for testing
-    # will throw error if a layer used but its material is not added here
+    # will throw error if a layer used but its material is not added here, e.g.:
+    # * WARNING *
+    # 'WS₂ Zong Lorentzian' is not in list
+    # where I forgot to change WS2 for WS2_ZONG
 
     swg.add_layer(air_layer)
     swg.add_layer(WS2_layer)
@@ -677,7 +681,7 @@ def main() -> None:
     filling = [0.8]
 
     periods = range_in(0.3, 0.4, 0.05)
-    thicknesses = range_in(0.01, 0.05, 0.01)
+    thicknesses = range_in(0.01, 0.03, 0.01)
     # filling = range_in(0.7, 0.9, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
@@ -699,9 +703,9 @@ def main() -> None:
 
     # change the values of N, experiment suffix, alpha for each batch
     min_detail = 50 / 1000
-    e_max = 3.1
+    e_max = 2.48
     e_min = 1.2
-    experiment_num = str(10.6)
+    experiment_num = str(11.1)
 
     periods_p = {} # periods profiles
     for ax in periods:
