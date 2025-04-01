@@ -351,7 +351,8 @@ def time_it(func):
 # main function
 @time_it
 def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:float|None=None, beta:float|None=None,
-                   experiment_suf:str=None, min_detail:float=0.1):
+                   experiment_suf:str=None, min_detail:float=0.1,
+                   e_max:float=2.2, e_min:float=1.2):
     """
     Main simulation function. Assume all units micron.
     :param N: resolution of simulation
@@ -362,11 +363,13 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     :param beta: fixed asymmetry [micron]
     :param experiment_suf: name the sim with a suffix
     :param min_detail: minimum detail that can be fabricated [micron] default 0.1 um
+    :param e_max: max energy [eV]
+    :param e_min: min energy [eV]
     :return:
     """
 
-    lbda_min = 1240 / 2.2 # y limits
-    lbda_max = 1240 / 1.2
+    lbda_min = 1240 / e_max  # y limits
+    lbda_max = 1240 / e_min
 
     lbda = np.linspace(lbda_min/1000,lbda_max/1000,N)
     # E=1.23987/lbda
@@ -425,6 +428,9 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                    # 'Materials/WSe2_Zotev.txt' 'Materials/WS2_Munkhbat2022.txt'
                    description=f"TMD layer, WS{phys.sub_2}.")
 
+    WS2_ZONG = Material(f'WS{phys.sub_2} Zong Lorentzian', dispersive=True,
+                        material_path='Materials/Zong et al. Lorentzian WS2/2eV_ex_lorentzian_Zong.csv',
+                        description=f"TMD layer, WS{phys.sub_2}. Lorenzian dielectric, exciton 2eV.")
 
     # use legacy variable names from here
 
@@ -437,24 +443,24 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     # check wire and track detail level isnt smaller than 100nm
     if alpha != None:
-        wa = w * (1-alpha)
-        axa = ax * (1-alpha)
+        wa = w * (1 - alpha)
+        axa = ax * (1 - alpha)
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
+            raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
                                      exceeded=f"{wa:.3f} or {axa - wa:.3f} < {min_detail:.3f}")
     elif beta != None:
         if w < min_detail:
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
-        if ax-beta < min_detail:
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
+            raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
+                                     exceeded=f"{w:.3f} < {min_detail:.3f}")
+        if ax - beta < min_detail:
+            raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
+                                     exceeded=f"{ax - beta:.3f} < {min_detail:.3f}")
 
-    if (w<min_detail) or ((ax-w)<min_detail):
-        #sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
-        raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                 exceeded=f"{w:.3f} or {ax-w:.3f} < {min_detail:.3f}")
+    if (w < min_detail) or ((ax - w) < min_detail):
+        # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
+        raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
+                                 exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
 
 
     # make the layers
@@ -470,7 +476,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     swg = Waveguide() # make Waveguide object
     swg.write_material_order([air,WS2,SiO2,Si]) # simply the materials list, but instead with Material objects
     # could be made redundant by adding automatically when adding the layers, however easier to set order for testing
-    # will throw error if a layer used but its material is not added here
+    # !!! will throw error if a layer used but its material is not added here !!!
 
     swg.add_layer(air_layer)
     swg.add_layer(WS2_layer)
@@ -611,10 +617,10 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     #print(f"Data shape:\n{np.shape(T_sub_data)}")
 
-    if alpha != None:
-        title_name += f" {greek.alpha}={alpha:.3f}"
-    elif beta != None:
-        title_name += f" {greek.beta}={beta:.3f}"
+    # if alpha != None:
+    #     title_name += f" {greek.alpha}={alpha:.3f}"
+    # elif beta != None:
+    #     title_name += f" {greek.beta}={beta:.3f}"
 
     plt.savefig(images_folder / f"{project_name} - {details}.png", dpi=150)
     plt.show()
@@ -643,13 +649,13 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.35]
-    thicknesses = [0.01, 0.02]
-    filling = [0.855]
+    periods = [0.2]
+    thicknesses = [0.03]
+    filling = [0.7, 0.75]
 
-    # periods = range_in(0.3, 0.6, 0.05)
-    # thicknesses = range_in(0.02, 0.1, 0.02)
-    # filling = range_in(0.7, 0.9, 0.05)
+    # periods = range_in(0.3, 0.5, 0.1)
+    # thicknesses = range_in(0.02, 0.04, 0.02)
+    # filling = range_in(0.8, 0.85, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
@@ -661,7 +667,8 @@ def main() -> None:
     alphas = [.0]
     betas = [0.05]
 
-    asyms = betas
+    asyms = range_in(0., 0.1, (0.02))
+    # asyms = [0., 0.05, 0.1]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -669,6 +676,10 @@ def main() -> None:
     print(f"PERIODS {periods}\nTHICKNESSES {thicknesses}\nFILLINGS {filling}")
     time.sleep(1)
 
+    min_detail = 50 / 1000
+    e_max = 2.48
+    e_min = 1.2
+    experiment_num = str(11.6)
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -677,11 +688,15 @@ def main() -> None:
                 for asym in asyms:
                     iterations += 1
                     try:
-                        min_detail = 50/1000
+
                         run_simulation(
-                            N=125, period=ax, thickness=t, filling=ff, beta=asym, min_detail=min_detail,
-                            experiment_suf=f'[10.4] min_detail={min_detail*1000:.0f}nm β={asym:.2f}'
-                            )
+                            N=125, period=ax, thickness=t, filling=ff,
+                            beta=asym,
+                            min_detail=min_detail,
+                            experiment_suf=f'[{experiment_num}] β={asym:.2f}',
+                            e_max=e_max,
+                            e_min=e_min
+                        )
 
                     except SizeLimitException as e:
                         print(e.message, e.exceeded)

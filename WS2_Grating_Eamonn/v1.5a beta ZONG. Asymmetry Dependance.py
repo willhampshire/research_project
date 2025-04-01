@@ -455,19 +455,19 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
         axa = ax * (1 - alpha)
         if (wa < min_detail) or ((axa - wa) < min_detail):
             # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
+            raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail*1000:.0f}nm.",
                                      exceeded=f"{wa:.3f} or {axa - wa:.3f} < {min_detail:.3f}")
     elif beta != None:
         if w < min_detail:
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
+            raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail*1000:.0f}nm.",
+                                     exceeded=f"{w:.3f} < {min_detail:.3f}")
         if ax - beta < min_detail:
-            raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
-                                     exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
+            raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail*1000:.0f}nm.",
+                                     exceeded=f"{ax - beta:.3f} < {min_detail:.3f}")
 
     if (w<min_detail) or ((ax-w)<min_detail):
         #sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
-        raise SizeLimitException(message="Cannot have track/wire feature <100nm.",
+        raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail*1000:.0f}nm.",
                                  exceeded=f"{w:.3f} or {ax-w:.3f} < {min_detail:.3f}")
 
 
@@ -676,13 +676,13 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.3, 0.4, 0.5, 0.6]
-    # thicknesses = [0.01, 0.02, 0.03]
-    filling = [0.8]
+    # periods = [0.175]
+    # thicknesses = [0.01]
+    # filling = [0.714]
 
-    periods = range_in(0.3, 0.4, 0.05)
-    thicknesses = range_in(0.01, 0.03, 0.01)
-    # filling = range_in(0.7, 0.9, 0.05)
+    periods = range_in(0.15, 0.5, 0.05)
+    thicknesses = range_in(0.01, 0.04, 0.01)
+    filling = range_in(0.7, 0.9, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
@@ -705,7 +705,7 @@ def main() -> None:
     min_detail = 50 / 1000
     e_max = 2.48
     e_min = 1.2
-    experiment_num = str(11.1)
+    experiment_num = str(11.5)
 
     periods_p = {} # periods profiles
     for ax in periods:

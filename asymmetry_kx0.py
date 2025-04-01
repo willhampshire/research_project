@@ -15,7 +15,7 @@ cwd = Path(os.getcwd())
 results_dir = cwd / "WS2_Grating_Eamonn" / "Results"
 results_dir.mkdir(exist_ok=True)
 
-project_folder = results_dir / 'ASYM WS₂ Zong Lorentzian, SiO₂, Si [11.1] e_max=2.48'
+project_folder = results_dir / 'ASYM WS₂ Zong Lorentzian, SiO₂, Si [11.5] e_max=2.48'
 json_path = project_folder / 'summary_alpha.json'
 meta_json_path = project_folder / 'summary_alpha_meta.json'
 
@@ -62,29 +62,40 @@ data_df.info()
 # df_reflectivity.index = np.linspace(e_max, e_min, len(df_reflectivity.index))
 # print(df_reflectivity.head())
 
+def range_in(start:float, stop:float, step:float) -> List[float]:
+    """
+    Inclusive range generator
+    Output rounded to 6dp
+    :return: np.array
+    """
+    n_points = round(((stop-start)/step),0) +1
+    linspace = list(np.linspace(start, stop, int(n_points)))
+    return [round(num, 6) for num in linspace]
 
 
+periods = range_in(0.15, 0.5, 0.05)
+thicknesses = range_in(0.01, 0.04, 0.01)
+filling = range_in(0.7, 0.9, 0.05)
 
-period = [0.3, 0.35, 0.4]
-thickness = [0.01, 0.02, 0.03, 0.04, 0.05]
-filling = [0.8]
 
-
-for p in period:
-    for t in thickness:
+for p in periods:
+    for t in thicknesses:
         for f in filling:
 
             choose: List[float] = [p,t,f]
             choose_str = [f"{s:.4f}" for s in choose]
 
             choose_str_1 = 'Wavelength vs Asym param -'
-            choose_str_2 = 'Line profiles -'
+            choose_str_2 = 'Line profiles eV -'
+            choose_str_3 = 'Line profiles um -'
             for s in choose:
                 choose_str_1 += f' {s}'
                 choose_str_2 += f' {s}'
+                choose_str_3 += f' {s}'
 
             choose_str_1 += '.png'
             choose_str_2 += '.png'
+            choose_str_3 += '.png'
 
             # Extract data
             alpha_layer = data[choose_str[0]][choose_str[1]][choose_str[2]]
@@ -92,11 +103,19 @@ for p in period:
             x_axis = [float(val) for val in x_axis_str]
 
             # Create DataFrame
-            y_data = np.array([alpha_layer[f'{x}'] for x in x_axis_str]).T
-            df_reflectivity = pd.DataFrame(y_data, columns=x_axis)
+            try:
+                y_data = np.array([alpha_layer[f'{x}'] for x in x_axis_str]).T
+                df_reflectivity = pd.DataFrame(y_data, columns=x_axis)
+            except:
+                print(f"No data found for {choose_str}")
+                continue
 
             # Set index as descending energy from 2.2 to 1.2 eV
             df_reflectivity.index = np.linspace(e_max, e_min, len(df_reflectivity.index))
+
+            os.makedirs(project_folder / 'asym_heatmap', exist_ok=True)
+            df_reflectivity.to_csv(project_folder / 'asym_heatmap' / 'energy_vs_asym_heatmap.csv',
+                                   header=True, index=True)
 
             # Convert to Wavelength (λ = 1.24 / E) & sort ascending
             df_reflec_wave = df_reflectivity.copy()
@@ -124,7 +143,6 @@ for p in period:
             ax.set_yticklabels(ytick_labels)
 
 
-
             # Labels & title
             plt.xlabel("Asym")
             plt.ylabel("Wavelength [μm]")
@@ -141,35 +159,69 @@ for p in period:
 
             new_cols = asyms_x_labels
 
-            ic(new_cols)
+            # ic(new_cols)
+            energy_or_wavelength_profile = 'wavelength'
 
-            # plotting
-            fig, ax = plt.subplots()
-            sns.set_theme(style="whitegrid")
-            plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
+            if energy_or_wavelength_profile == 'wavelength':
 
-            for col in new_cols:
-                sns.lineplot(ax=ax, data=df_reflectivity, x=df_reflectivity.index, y=col,
-                             label=f"{col:.3f}")
+                fig, ax = plt.subplots()
+                sns.set_theme(style="whitegrid")
+                plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
 
-            ax.set_xlabel('Energy [eV]')
-            ax.set_ylabel('Reflectivity [arb]')
+                for col in new_cols[::10]:
+                    sns.lineplot(ax=ax, data=df_reflec_wave, x=df_reflec_wave.index, y=col,
+                                 label=f"{col:.3f}")
 
-            ax.minorticks_on()
-            ax.set_xlim([e_min, e_max])
-            # ax.set_ylim([0,1])
+                ax.set_xlabel('Wavelength [um]')
+                ax.set_ylabel('Reflectivity [arb]')
 
-            ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
+                ax.minorticks_on()
+                # ax.set_xlim([0.5, 0.7])
+                # ax.set_ylim([0,1])
 
-            # Add legend and show the plot
-            ax.legend(loc='lower right')
+                # ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
 
-            plt.title(f"kx=0 line profiles of alpha (key) - {choose} [ax, t, ff]")
-            # Save and show
-            image_path_b = project_folder / 'images' / choose_str_2
-            plt.savefig(image_path_b, dpi=300)
-            print(f"SAVED IMAGE TO {image_path_b}")
+                # Add legend and show the plot
+                ax.legend()
 
-            plt.show()
+                plt.title(f"kx=0 line profiles of alpha (key) - {choose} [ax, t, ff]")
+                # Save and show
+                image_path_b = project_folder / 'images' / choose_str_3
+                plt.savefig(image_path_b, dpi=300)
+                print(f"SAVED IMAGE TO {image_path_b}")
+
+                plt.show()
+
+
+            elif energy_or_wavelength_profile == 'energy':
+
+                # plotting
+                fig, ax = plt.subplots()
+                sns.set_theme(style="whitegrid")
+                plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
+
+                for col in new_cols[::10]:
+                    sns.lineplot(ax=ax, data=df_reflectivity, x=df_reflectivity.index, y=col,
+                                 label=f"{col:.3f}")
+
+                ax.set_xlabel('Energy [eV]')
+                ax.set_ylabel('Reflectivity [arb]')
+
+                ax.minorticks_on()
+                ax.set_xlim([e_min, e_max])
+                # ax.set_ylim([0,1])
+
+                ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
+
+                # Add legend and show the plot
+                ax.legend()
+
+                plt.title(f"kx=0 line profiles of alpha (key) - {choose} [ax, t, ff]")
+                # Save and show
+                image_path_b = project_folder / 'images' / choose_str_2
+                plt.savefig(image_path_b, dpi=300)
+                print(f"SAVED IMAGE TO {image_path_b}")
+
+                plt.show()
 
 
