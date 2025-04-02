@@ -649,9 +649,9 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.2]
+    periods = [0.4]
     thicknesses = [0.03]
-    filling = [0.7, 0.75]
+    filling = [0.7]
 
     # periods = range_in(0.3, 0.5, 0.1)
     # thicknesses = range_in(0.02, 0.04, 0.02)
@@ -664,11 +664,10 @@ def main() -> None:
     # thicknesses = range_in(0.04, 0.1, 0.01)
     # filling = range_in(0.78, 0.84, 0.02)
     # alphas = range_in(.0, 0.3, 0.01)
-    alphas = [.0]
-    betas = [0.05]
 
     asyms = range_in(0., 0.1, (0.02))
     # asyms = [0., 0.05, 0.1]
+    asyms = [0.]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -679,7 +678,7 @@ def main() -> None:
     min_detail = 50 / 1000
     e_max = 2.48
     e_min = 1.2
-    experiment_num = str(11.6)
+    experiment_num = str(11.7)
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -691,9 +690,9 @@ def main() -> None:
 
                         run_simulation(
                             N=125, period=ax, thickness=t, filling=ff,
-                            beta=asym,
+                            # beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}] β={asym:.2f}',
+                            experiment_suf=f'[{experiment_num}]', # β={asym:.2f}
                             e_max=e_max,
                             e_min=e_min
                         )
