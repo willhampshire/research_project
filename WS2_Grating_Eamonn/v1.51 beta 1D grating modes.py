@@ -586,6 +586,15 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     dynamic_folder = results_dir / project_name / (details + f' N={N}')
     dynamic_folder.mkdir(exist_ok=True, parents=True)
 
+    experiment_summary_dir = results_dir / project_name
+    experiment_summary_dir.mkdir(exist_ok=True)
+    experiment_summary = f"N: {N}\nmin_detail: {min_detail}\ne_max: {e_max}\ne_min: {e_min}"
+
+    experiment_summary_fname = results_dir / project_name / 'experiment_info.txt'
+
+    np.savetxt(experiment_summary_fname, [experiment_summary], fmt='%s', delimiter='\t')
+
+
     images_folder = dynamic_folder / "images"
     data_folder = dynamic_folder / "data"
     images_folder.mkdir(exist_ok=True)
@@ -656,13 +665,13 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.2]
-    # thicknesses = [0.03]
-    # filling = [0.7, 0.75]
+    # periods = [0.6]
+    # thicknesses = [0.08]
+    filling = [0.7]
 
-    periods = range_in(0.2, 0.8, 0.2)
-    thicknesses = range_in(0.02, 0.1, 0.02)
-    filling = range_in(0.7, 0.85, 0.05)
+    periods = range_in(0.2, 0.4, 0.1)
+    thicknesses = range_in(0.04, 0.08, 0.02)
+    # filling = range_in(0.7, 0.75, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
@@ -674,8 +683,9 @@ def main() -> None:
     alphas = [.0]
     betas = [0.05]
 
-    asyms = range_in(0., 0.1, 0.02)
-    # asyms = [0., 0.05, 0.1]
+    # asyms = range_in(0.06, 0.09, 0.01)
+    # asyms = [0.056, 0.058, 0.062, 0.064, 0.066, 0.068]
+    asyms = [0.]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -686,7 +696,7 @@ def main() -> None:
     min_detail = 50 / 1000
     e_max = 2.48
     e_min = 1.2
-    experiment_num = str(11.7)
+    experiment_num = '11.9.1'
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -700,7 +710,7 @@ def main() -> None:
                             N=125, period=ax, thickness=t, filling=ff,
                             beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}] β={asym:.2f}',
+                            experiment_suf=f'[{experiment_num}] β={asym:.3f}',
                             e_max=e_max,
                             e_min=e_min
                         )
@@ -711,6 +721,7 @@ def main() -> None:
 
                     finally:
                         print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f}")
+
 
 
 main()
