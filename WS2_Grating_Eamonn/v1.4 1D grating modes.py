@@ -364,7 +364,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     polar=2 #Polarization of incident wave: 1-> x, 2-> y, 3->L, 4->R, 5->s, 6->p, 7->45°, 8->-45°, 0-> All 6 polarizations (H,V,D,A,L,R) for the Stoke parameter
 
     # demorized gratings - 15, otherwise - 7 (regular periodic 1D simulation)
-    if (alpha != None) or (float(alpha) != float(0)):
+    if (alpha != None):
         N_ord = 15
         lattice_u_factor = 2 # double period grating
     else:
@@ -615,9 +615,9 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    # periods = [0.8]
-    # thicknesses = [0.06]
-    # filling = [0.8]
+    periods = [0.45]
+    thicknesses = [0.03]
+    filling = [0.7]
 
     # periods = range_in(0.3, 0.6, 0.05)
     # thicknesses = range_in(0.02, 0.1, 0.02)
@@ -626,17 +626,17 @@ def main() -> None:
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
     # alphas.extend(range_in(0.1,0.9,0.1))
 
-    periods = range_in(0.2, 0.3, 0.1/2)
-    thicknesses = range_in(0.04, 0.1, 0.01)
-    filling = range_in(0.78, 0.84, 0.02)
+    # periods = range_in(0.2, 0.3, 0.1/2)
+    # thicknesses = range_in(0.04, 0.1, 0.01)
+    # filling = range_in(0.78, 0.84, 0.02)
     # alphas = range_in(.0, 0.3, 0.01)
-    alphas = [.0]
+    alphas = [None]
 
 
     ### TEMP ###
-    filling = [0.8]
-    periods = range_in(0.3, 0.6, 0.1)
-    thicknesses = range_in(0.04, 0.08, 0.01)
+    # filling = [0.8]
+    # periods = range_in(0.3, 0.6, 0.1)
+    # thicknesses = range_in(0.04, 0.08, 0.01)
     # alphas = range_in(.0, 0.3, 0.01)
     ### TEMP ###
 
@@ -654,10 +654,10 @@ def main() -> None:
                 for alpha in alphas:
                     iterations += 1
                     try:
-                        min_detail = 50/1000
+                        min_detail = 100/1000
                         run_simulation(
                             N=125, period=ax, thickness=t, filling=ff, alpha=alpha, min_detail=min_detail,
-                            experiment_suf=f'[10.3] min_detail={min_detail*1000:.0f}nm α={alpha:.2f}'
+                            experiment_suf=f'[5.10]'
                             )
 
                     except SizeLimitException as e:

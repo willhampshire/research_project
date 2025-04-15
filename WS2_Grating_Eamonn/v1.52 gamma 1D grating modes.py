@@ -441,7 +441,8 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
     ax=period # range .2 ~ .6
     FF=filling # ~ .7/8
-    w=FF*ax
+    w = FF * ax # slab width
+    we = (1-FF) * ax # etch width
 
     u = [lattice_u_factor*ax, 0]
     v = [0, 0]
@@ -455,12 +456,12 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
             raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
                                      exceeded=f"{wa:.3f} or {axa - wa:.3f} < {min_detail:.3f}")
     elif beta != None:
-        if w < min_detail:
+        if w - beta < min_detail:
             raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
-                                     exceeded=f"{w:.3f} < {min_detail:.3f}")
-        if ax - beta < min_detail:
+                                     exceeded=f"{w - beta:.3f} < {min_detail:.3f}")
+        if we < min_detail:
             raise SizeLimitException(message=f"Cannot have track/wire feature <{min_detail * 1000:.0f}nm.",
-                                     exceeded=f"{ax - beta:.3f} < {min_detail:.3f}")
+                                     exceeded=f"{we:.3f} < {min_detail:.3f}")
 
     if (w < min_detail) or ((ax - w) < min_detail):
         # sys.exit(f"EXITING: w={w:.3f}, ax-w={ax-w:.3f} < {min_detail}")
@@ -669,8 +670,8 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.3]
-    thicknesses = [0.02]
+    periods = [0.25]
+    thicknesses = [0.03]
     filling = [0.7]
 
     # periods = range_in(0.2, 0.4, 0.1)
@@ -684,13 +685,14 @@ def main() -> None:
     # thicknesses = range_in(0.04, 0.1, 0.01)
     # filling = range_in(0.78, 0.84, 0.02)
     # alphas = range_in(.0, 0.3, 0.01)
-    alphas = [0.2, 0.3, 0.4]
-    betas = [0.05]
 
     # asyms = range_in(0.02, 0.1, 0.02)
     # asyms = [0.05, 0., 0.1]
-    asyms = [0.13]
-    asyms = alphas
+    # asyms = [0.13]
+    # asyms = alphas
+
+    gammas = [0.34, 0.36, 0.38, 0.50, 0.52, 0.54]
+    asyms = gammas
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -698,10 +700,11 @@ def main() -> None:
     print(f"PERIODS {periods}\nTHICKNESSES {thicknesses}\nFILLINGS {filling}")
     time.sleep(1)
 
-    min_detail = 50 / 1000
+    min_detail = 25 / 1000
     e_max = 2.48
     e_min = 1.2
-    experiment_num = '11.10'
+    experiment_num = '11.9.7'
+
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -709,14 +712,18 @@ def main() -> None:
             for ff in filling:
                 for asym in asyms:
                     iterations += 1
+
+                    # for gamma asym - beta = gamma * Lambda
+                    asym = asym * ax # ax has micron units, so asym does too
+
                     try:
 
                         run_simulation(
-                            N=125, period=ax, thickness=t, filling=ff,
-                            alpha=asym,
-                            # beta=asym,
+                            N=50, period=ax, thickness=t, filling=ff,
+                            # alpha=asym,
+                            beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}] α={asym:.3f}',
+                            experiment_suf=f'[{experiment_num}] γ={asym/ax:.3f}',
                             e_max=e_max,
                             e_min=e_min
                         )

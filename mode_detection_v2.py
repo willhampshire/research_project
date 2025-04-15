@@ -24,14 +24,11 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 5.2 (alpha 0.00)'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [11.9.3] β=0.090'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si [5.10]'
 
-# results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=18.0nm Λ=500nm FF=0.84 N=75' / 'data'
-# results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=60.0nm Λ=350nm FF=0.55 N=75' / 'data'
-# results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si' / 't=38.0nm Λ=500nm FF=0.76 N=75' / 'data'
-# results_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si 4' / 't=20.0nm Λ=550nm FF=0.55 N=75' / 'data'
 
-savepath = cwd / 'mode_fitting'
+savepath = cwd / 'mode_fitting' / 'v2'
 savepath.mkdir(exist_ok=True, parents=True)
 
 
@@ -461,21 +458,21 @@ def fit_simulation(results_dir):
 
         # Overlay the data and the fitted hyperbolic curve on the heatmap
 
-        # plt.plot(x_data, y_data, 'bx', markersize=6, label='Weighted Avg')
-        # plt.plot(x_data_cleaned, y_data_cleaned, 'bo', markersize=6, label='Weighted Avg cleaned')
-        # # plt.plot(x_plotting, y_fit, 'r--', linewidth=2, label='Initial Fit')
-        # plt.plot(x_plotting, y_fit_cleaned, 'r-', linewidth=2, label='Refitted Hyperbolic Curve')
-        #
-        # plt.xlabel('k_x')
-        # plt.ylabel('eV')
-        # if iteration == 0:
-        #     plt.legend(loc='lower center')
-        # if iteration == 1:
-        #     plt.legend(loc='upper center')
-        #
-        # plt.title('Asymptotic hyperbola fit')
-        # plt.savefig(savepath / f'Fitted {iteration}.png', dpi=150)
-        # plt.show()
+        plt.plot(x_data, y_data, 'bx', markersize=6, label='Weighted Avg')
+        plt.plot(x_data_cleaned, y_data_cleaned, 'bo', markersize=6, label='Weighted Avg cleaned')
+        # plt.plot(x_plotting, y_fit, 'r--', linewidth=2, label='Initial Fit')
+        plt.plot(x_plotting, y_fit_cleaned, 'r-', linewidth=2, label='Refitted Hyperbolic Curve')
+
+        plt.xlabel('x [px]')
+        plt.ylabel('y [px]')
+        if iteration == 0:
+            plt.legend(loc='lower center')
+        if iteration == 1:
+            plt.legend(loc='upper center')
+
+        plt.title('Asymptotic hyperbola fit')
+        plt.savefig(savepath / f'Fitted {iteration}.png', dpi=150)
+        plt.show()
 
         a_cleaned, L_cleaned, M_cleaned, F_cleaned, B_cleaned, V_cleaned, ex = popt_cleaned
         print(f"Fitted parameters (cleaned hyperbolic):\na = {a_cleaned:.4f}, L = {L_cleaned:.4f}, M = {M_cleaned:.4f}, F = {F_cleaned:.4f}, B = {B_cleaned:.4f}, V = {V_cleaned:.4f}")
@@ -594,8 +591,8 @@ def fit_simulation(results_dir):
     fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
     pcm = axs.pcolor(k_scan, energy_eV, signalR, cmap='viridis', clim=(0, 1))
     m1 = r'{-1}'
-    axs.set(xlabel=f'k$_x$ [{greek.mu}m{m1}]', xlim=(-kmax,kmax), ylim=(min_eV, max_eV), ylabel='Photon Energy [eV]',
-            title=f'Upper and lower modes, vertices, asymptotes\n{results_dir.parents[0].name}')
+    axs.set(xlabel=f'k$_x$ [{greek.mu}m$^{m1}$]', xlim=(-kmax,kmax), ylim=(min_eV, max_eV), ylabel='Photon Energy [eV]',
+            title=f'Fitted hyperbolic modes to dispersion relation\n{results_dir.parents[0].name}')
     # y_eV = 1.45    # reference line at 1.45eV
     # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
     cbar =fig.colorbar(pcm,location='right')
@@ -610,7 +607,7 @@ def fit_simulation(results_dir):
             popt = fitting_data[f'{i}']['popt']
             fit = hyperbolas[i%2](x_graphing, *popt)
 
-            plt.plot(k_scan_line, fitted_to_graph(fit), 'r-', linewidth=2, label='Fit')
+
             fits.append(fit)
 
             print(fit)
@@ -622,8 +619,14 @@ def fit_simulation(results_dir):
             asyms.append(asym)
             print(vertex)
 
-            plt.axhline(y=vertex, color='m', linestyle='--', label='Vertex')
-            plt.axhline(y=asym, color='k', linestyle=':', label='Asymptote', linewidth=3)
+            if i==0:
+                plt.plot(k_scan_line, fitted_to_graph(fit), 'r--', alpha=0.5, linewidth=2, label=f'Fit')
+                plt.axhline(y=vertex, color='m', linestyle=':', label='Vertex', linewidth=2)
+                plt.axhline(y=asym, color='k', linestyle=':', label='Asymptote', linewidth=3)
+            else:
+                plt.plot(k_scan_line, fitted_to_graph(fit), 'r--', alpha=0.5, linewidth=2)
+                plt.axhline(y=vertex, color='m', linestyle=':', linewidth=2)
+                plt.axhline(y=asym, color='k', linestyle=':', linewidth=3)
         except:
             print(f"MODE NOT FOUND FOR i={i}")
             continue
@@ -631,7 +634,7 @@ def fit_simulation(results_dir):
 
     print(f"Vertices {np.array(vertices).tolist()}\nAsyms {np.array(asyms).tolist()}")
 
-    plt.axhline(y=1.8,color='c', linestyle=':', linewidth=3, label='1.8eV')
+    # plt.axhline(y=1.8,color='c', linestyle=':', linewidth=3, label='1.8eV')
 
 
     plt.legend(loc='upper left', framealpha=0.8)
