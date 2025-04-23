@@ -1,0 +1,4 @@
+N: 200
+min_detail: 0.025
+e_max: 2.48
+e_min: 1.2

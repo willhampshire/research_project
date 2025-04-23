@@ -1,0 +1,5 @@
+name,dispersive,material_path,material_n_k,pattern,description,thickness,thickness_sub
+air,False,,"[1, 0]",,Air.,0.0,0.0
+WS₂ Zong Lorentzian,True,Materials/Zong et al. Lorentzian WS2/2eV_ex_lorentzian_Zong.csv,,"Pattern(ax=0.175, ff=0.714, w=0.125, w_h=0.050, alpha=None, beta=0.07175, form=1.000, lattice=[[0.35, 0], [0, 0]])","TMD layer, WS₂. Lorenzian dielectric, exciton 2eV.",0.01,0.0
+SiO₂,True,Materials/SiO2_Horiba.txt,,,Silicon Dioxide substrate.,0.29,0.29
+Si,True,Materials/cSi_Green_2008.txt,,,Silicon substrate.,2.0,2.0

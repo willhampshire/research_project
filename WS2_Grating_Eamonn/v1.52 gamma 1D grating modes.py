@@ -469,30 +469,32 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                                  exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
 
 
+    PATTERN_MATERIAL = WS2
+
     # make the layers
     air_layer = air.make_layer(t=0, t_sub=0)
     # WS2_layer = WS2.make_layer(t=thickness, t_sub=0)
-    MoS2_layer = MoS2.make_layer(t=thickness, t_sub=0)
+    PATTERN_LAYER = PATTERN_MATERIAL.make_layer(t=thickness, t_sub=0)
     Si_layer = Si.make_layer(2)
     # Au_layer = Au.make_layer(0.150)
     SiO2_layer = SiO2.make_layer(0.29)
 
     # pattern the grating layer
-    MoS2_layer.pattern = Pattern(ax, FF, size=[ax-w,0], lattice=[u,v], alpha=alpha, beta=beta)
+    PATTERN_LAYER.pattern = Pattern(ax, FF, size=[ax-w,0], lattice=[u,v], alpha=alpha, beta=beta)
 
     swg = Waveguide() # make Waveguide object
-    swg.write_material_order([air,MoS2,SiO2,Si]) # simply the materials list, but instead with Material objects
+    swg.write_material_order([air,PATTERN_MATERIAL,SiO2,Si]) # simply the materials list, but instead with Material objects
     # could be made redundant by adding automatically when adding the layers, however easier to set order for testing
     # !!! will throw error if a layer used but its material is not added here !!!
 
     swg.add_layer(air_layer)
-    swg.add_layer(MoS2_layer)
+    swg.add_layer(PATTERN_LAYER)
     swg.add_layer(SiO2_layer)
     #swg.add_layer(Au_layer)
     swg.add_layer(Si_layer)
 
     # change t=layer.thickness variable when naming other sims
-    details = (f"t={MoS2_layer.thickness * 1e3:.1f}nm "
+    details = (f"t={PATTERN_LAYER.thickness * 1e3:.1f}nm "
                f"{greek.Lambda}={ax * 1e3:.0f}nm "
                f"FF={FF:.2f}")
 
@@ -668,14 +670,14 @@ def main() -> None:
 
     # periods = [0.2, 0.4, 0.6]
     # thicknesses = [0.02, 0.06, 0.1]
-    # filling = [0.5, 0.7, 0.9]
+    filling = [0.7, 0.8]
 
-    periods = [0.25]
-    thicknesses = [0.03]
-    filling = [0.7]
+    # periods = [0.25]
+    # thicknesses = [0.03]
+    # filling = [0.7]
 
-    # periods = range_in(0.2, 0.4, 0.1)
-    # thicknesses = range_in(0.04, 0.08, 0.02)
+    periods = range_in(0.2, 1., 0.1)
+    thicknesses = range_in(0.02, 0.1, 0.02)
     # filling = range_in(0.7, 0.75, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
@@ -691,7 +693,8 @@ def main() -> None:
     # asyms = [0.13]
     # asyms = alphas
 
-    gammas = [0.34, 0.36, 0.38, 0.50, 0.52, 0.54]
+    gammas = [0.]
+
     asyms = gammas
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
@@ -703,8 +706,8 @@ def main() -> None:
     min_detail = 25 / 1000
     e_max = 2.48
     e_min = 1.2
-    experiment_num = '11.9.7'
-
+    experiment_num = '5.3'
+    N = 125
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -719,11 +722,12 @@ def main() -> None:
                     try:
 
                         run_simulation(
-                            N=50, period=ax, thickness=t, filling=ff,
+                            N=N, period=ax, thickness=t, filling=ff,
                             # alpha=asym,
                             beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}] γ={asym/ax:.3f}',
+                            experiment_suf=f'[{experiment_num}]',
+                            # experiment_suf=f'γ={asym / ax:.3f} N=200',
                             e_max=e_max,
                             e_min=e_min
                         )

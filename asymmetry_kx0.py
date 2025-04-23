@@ -118,7 +118,7 @@ for p in periods:
                 continue
 
             # Set index as descending energy
-            df_reflectivity.index = np.linspace(e_max, e_min, len(df_reflectivity.index))
+            df_reflectivity.index = np.linspace(1.24/e_max, 1.24/e_min, len(df_reflectivity.index))
             df_reflectivity.sort_index(ascending=False)
 
             os.makedirs(project_folder / 'asym_heatmap', exist_ok=True)
@@ -128,8 +128,10 @@ for p in periods:
 
             df_reflec_wave = df_reflectivity.copy()
 
-            df_reflec_wave.index = 1.24 / df_reflectivity.index
-            df_reflec_wave = df_reflec_wave.sort_index(ascending=False)  # Ensure correct order
+            df_reflec_energy = df_reflectivity.copy()
+
+            df_reflec_energy.index = 1.24 / df_reflectivity.index
+            df_reflec_energy = df_reflec_energy.sort_index(ascending=False)  # Ensure correct order
 
 
             # plt.figure(figsize=(10, 8))
@@ -162,36 +164,67 @@ for p in periods:
             # plt.savefig(image_path, dpi=300)
             # print(f"SAVED IMAGE TO {image_path}")
 
-            plt.figure(figsize=(10, 8))
+            # plt.figure(figsize=(10, 8))
+            #
+            # # Plot heatmap using imshow
+            # im = plt.imshow(
+            #     df_reflec_energy.values,
+            #     aspect='auto',
+            #     cmap='viridis',
+            #     interpolation='nearest',
+            #     origin='lower',
+            # )
+            #
+            # # Colorbar
+            # cbar = plt.colorbar(im)
+            # cbar.set_label('Reflectivity', fontsize=14)
+            # cbar.ax.tick_params(labelsize=12)
+            #
+            # # Y-axis ticks
+            # num_ticks = 21
+            # yticks = np.linspace(0, len(df_reflec_energy) - 1, num_ticks)
+            # ytick_labels = np.linspace(df_reflec_energy.index.max(), df_reflec_energy.index.min(), num_ticks)
+            # ytick_labels = [f"{y:.3f}" for y in ytick_labels]
+            #
+            # plt.yticks(yticks, ytick_labels, fontsize=12)
+            # plt.ylabel("Energy [eV]", fontsize=16)
+            #
+            # # X-axis ticks
+            # plt.xticks(
+            #     ticks=np.arange(0, len(df_reflec_energy.columns), 5),
+            #     labels=df_reflec_energy.columns[::5],
+            #     rotation=45,
+            #     fontsize=12
+            # )
+            # plt.xlabel("Asymmetry γ [arb]", fontsize=16)
+            #
+            # # Title
+            # plt.title(
+            #     f"Energy vs asymmetry parameter γ\n{experiment_name} Λ={choose[0]:.3f} t={choose[1]:.3f} FF={choose[2]:.2f}",
+            #     fontsize=18
+            # )
 
-            # Plot heatmap using imshow
-            im = plt.imshow(
-                df_reflectivity.values,
-                aspect='auto',
-                cmap='viridis',
-                interpolation='nearest',
-                origin='lower',
-            )
+            energy = df_reflec_energy.index
+            k_scan = df_reflec_energy.columns
+            signalR = df_reflec_energy.to_numpy()
+            print(signalR[:5,:5])
+            kmax=5
+            m1 = r'$^{-1}$'
+            kx0 = r'k$_x$=0'
+            title_name = (f"Energy vs Asymmetry γ at {kx0}\n{experiment_name}  "
+                          f"Λ={choose[0]*1000:.0f}nm t={choose[1]*1000:.0f}nm FF={choose[2]:.3f}")
 
-            # Colorbar
-            cbar = plt.colorbar(im)
-            cbar.set_label('Reflectivity')
+            plt.rcParams['font.size'] = '13'
+            fig, axs = plt.subplots(1, 1, sharey=True, figsize=(7, 6), dpi=80)
+            pcm = axs.pcolor(k_scan, energy, signalR, cmap='viridis', clim=(0, 1))
+            axs.set(xlabel="Asymmetry γ [arb]", ylim=(e_min, e_max),
+                    ylabel='Photon Energy [eV]', title=title_name)
+            # y_eV = 1.45    # reference line at 1.45eV
+            # axs.plot(k_scan,y_eV*k_scan/k_scan,'m--') # reference line at 1.45eV
+            cbar = fig.colorbar(pcm, location='right')
+            cbar.set_label('Reflectivity contrast')
+            plt.minorticks_on()
 
-            # Y-axis ticks
-            num_ticks = 21
-            yticks = np.linspace(0, len(df_reflectivity) - 1, num_ticks)
-            ytick_labels = np.linspace(df_reflectivity.index.max(), df_reflectivity.index.min(), num_ticks)
-            ytick_labels = [f"{y:.3f}" for y in ytick_labels]
-
-            plt.yticks(yticks, ytick_labels)
-            plt.ylabel("Energy [eV]")
-
-            # X-axis ticks
-            plt.xticks(ticks=np.arange(0, len(df_reflectivity.columns), 5), labels=df_reflectivity.columns[::5], rotation=45)
-            plt.xlabel("γ [arb]")
-
-            # Title
-            plt.title(f"Energy vs γ, {experiment_name}\nΛ={choose[0]:.3f} t={choose[1]:.3f} FF={choose[2]:.2f}")
 
             # Save and show
             os.makedirs(project_folder / 'images', exist_ok=True)
@@ -200,8 +233,6 @@ for p in periods:
             plt.savefig(image_path, dpi=300)
             plt.show()
             print(f"SAVED IMAGE TO {image_path}")
-
-            plt.show()
 
 
             new_cols = asyms_x_labels
@@ -248,7 +279,7 @@ for p in periods:
                 plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
 
                 for col in new_cols[::20]:
-                    sns.lineplot(ax=ax, data=df_reflectivity, x=df_reflectivity.index, y=col,
+                    sns.lineplot(ax=ax, data=df_reflec_energy, x=df_reflec_energy.index, y=col,
                                  label=f"{col:.3f}")
 
                 ax.set_xlabel('Energy [eV]')
@@ -258,13 +289,14 @@ for p in periods:
                 ax.set_xlim([e_min, e_max])
                 # ax.set_ylim([0,1])
 
-                ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
+                # ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
 
                 # Add legend and show the plot
                 ax.legend(title='γ', loc='best')
                 kx0 = r'k$_x$=0'
                 experiment_name_nonperplex = experiment_name.replace(phys.sub_2, r'$_2$')
-                plt.title(f"Normal incidence {kx0} line profiles in Energy\n{experiment_name_nonperplex} Λ={choose[0]:.3f} t={choose[1]:.3f} FF={choose[2]:.2f}")
+                plt.title(f"Normal incidence {kx0} line profiles in Energy\n{experiment_name_nonperplex}  "
+                          f"Λ={choose[0]*1000:.0f}nm t={choose[1]*1000:.0f}nm FF={choose[2]:.3f}")
                 # Save and show
                 image_path_b = project_folder / 'images' / choose_str_2
                 plt.savefig(image_path_b, dpi=300)

@@ -1,0 +1,40 @@
+-- Layer 1 --
+name: air
+dispersive: False
+material_path: None
+material_n_k: [1, 0]
+pattern: None
+description: Air.
+thickness: 0
+thickness_sub: 0
+
+-- Layer 2 --
+name: WS₂ Zong Lorentzian
+dispersive: True
+material_path: Materials/Zong et al. Lorentzian WS2/2eV_ex_lorentzian_Zong_HIGHRES.csv
+material_n_k: None
+pattern: Pattern(ax=0.175, ff=0.714, w=0.125, w_h=0.050, alpha=None, beta=0.0395, form=1.000, lattice=[[0.35, 0], [0, 0]])
+description: TMD layer, WS₂. Lorenzian dielectric, exciton 2eV.
+thickness: 0.01
+thickness_sub: 0
+
+-- Layer 3 --
+name: SiO₂
+dispersive: True
+material_path: Materials/SiO2_Horiba.txt
+material_n_k: None
+pattern: None
+description: Silicon Dioxide substrate.
+thickness: 0.29
+thickness_sub: 0.29
+
+-- Layer 4 --
+name: Si
+dispersive: True
+material_path: Materials/cSi_Green_2008.txt
+material_n_k: None
+pattern: None
+description: Silicon substrate.
+thickness: 2
+thickness_sub: 2
+
