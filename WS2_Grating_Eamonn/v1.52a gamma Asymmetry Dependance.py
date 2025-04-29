@@ -478,7 +478,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
 
     ### DECIDE THE PATTERNED GRATING MATERIAL FROM ABOVE DEFINED MATERIALS ###
-    PATTERN_MATERIAL = WS2_ZONG
+    PATTERN_MATERIAL = MoS2
 
 
 
@@ -701,9 +701,9 @@ def main() -> None:
     # thicknesses = [0.02, 0.06, 0.1]
     # filling = [0.5, 0.7, 0.9]
 
-    periods = [0.35/2]
-    thicknesses = [0.010]
-    filling = [0.714]
+    periods = [0.25]
+    thicknesses = [0.03]
+    filling = [0.7]
 
     # periods = range_in(0.15, 0.5, 0.05)
     # thicknesses = range_in(0.01, 0.04, 0.01)
@@ -718,9 +718,9 @@ def main() -> None:
     # alphas = range_in(.0, 0.3, 0.01)
     # asyms = range_in(0., 0.1, (0.01/2))
 
-    betas = range_in(0., 0.1, 0.1/200)
-    asyms = betas
-    asym_type_beta_gamma: bool = False
+    gammas = range_in(0., 0.6, 0.1/40)
+    asyms = gammas
+    asym_type_gamma: bool = True
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -730,10 +730,10 @@ def main() -> None:
 
 
     # change the values of N, experiment suffix, alpha for each batch
-    min_detail = 50 / 1000
-    e_max = 1.24/0.5
-    e_min = 1.24/0.7
-    experiment_num = '5.3.2'
+    min_detail = 25 / 1000
+    e_max = 1.7
+    e_min = 1.2
+    experiment_num = '11.9.8'
     N=200
 
     asyms_new_:list = []
@@ -746,20 +746,20 @@ def main() -> None:
                 asym_p = {}
                 for asym in asyms:
                     iterations += 1
-                    if asym_type_beta_gamma == True:
-                        asym_new = asym * ax # ax has micron units, so asym does too
-                        asyms_new_.append(asym_new)
+                    if asym_type_gamma == True:
+                        asym_beta = asym * ax # ax has micron units, so asym does too
+                        asyms_new_.append(asym)
                     else:
-                        asym_new = asym
-                        asyms_new_.append(asym_new)
+                        asym_beta = asym
+                        asyms_new_.append(asym_beta)
 
                     try:
                         # DO NOT INCLUDE THE ASYMMETRY PARAMTER IN THE EXPERIMENT SUFFIX (next script requires same dir)
                         profile = run_simulation(
                             N=N, period=ax, thickness=t, filling=ff,
-                            beta=asym_new,
+                            beta=asym_beta,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}] β',
+                            experiment_suf=f'[{experiment_num}] γ e_max={e_max}',
                             e_max=e_max,
                             e_min=e_min
                             )
@@ -767,7 +767,7 @@ def main() -> None:
                         # add profile as list to dict/json structure
                         profile_flat = profile.flatten().tolist() # 1D so can just flatten
                         # alpha_dict = {f'{alpha:.4f}': profile_flat}
-                        asym_p[f'{asym_new:.4f}'] = profile_flat
+                        asym_p[f'{asym:.4f}'] = profile_flat
 
                     except SizeLimitException as sle:
                         print(sle.message, sle.exceeded)
@@ -779,7 +779,7 @@ def main() -> None:
 
 
                     finally:
-                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f} asym={asym_new:.3f}")
+                        print(f"Iteration {iterations} complete - p={ax:.3f} t={t:.3f} ff={ff:.2f} asym={asym:.3f}")
 
                 # alpha loop done
                 # filling_dict = {f'{ff:.4f}': alphas_p}

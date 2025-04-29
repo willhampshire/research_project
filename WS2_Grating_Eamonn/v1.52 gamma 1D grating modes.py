@@ -469,7 +469,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
                                  exceeded=f"{w:.3f} or {ax - w:.3f} < {min_detail:.3f}")
 
 
-    PATTERN_MATERIAL = WS2
+    PATTERN_MATERIAL = MoS2
 
     # make the layers
     air_layer = air.make_layer(t=0, t_sub=0)
@@ -670,14 +670,14 @@ def main() -> None:
 
     # periods = [0.2, 0.4, 0.6]
     # thicknesses = [0.02, 0.06, 0.1]
-    filling = [0.7, 0.8]
+    # filling = [0.7, 0.8]
 
-    # periods = [0.25]
-    # thicknesses = [0.03]
-    # filling = [0.7]
+    periods = [0.25]
+    thicknesses = [0.03]
+    filling = [0.7]
 
-    periods = range_in(0.2, 1., 0.1)
-    thicknesses = range_in(0.02, 0.1, 0.02)
+    # periods = range_in(0.2, 1., 0.1)
+    # thicknesses = range_in(0.02, 0.1, 0.02)
     # filling = range_in(0.7, 0.75, 0.05)
 
     # alphas = [.0, 0.01, 0.05, 0.1, 0.15, 0.2]
@@ -693,7 +693,7 @@ def main() -> None:
     # asyms = [0.13]
     # asyms = alphas
 
-    gammas = [0.]
+    gammas = [0.36, 0.45, 0.5, 0.54]
 
     asyms = gammas
 
@@ -704,10 +704,10 @@ def main() -> None:
     time.sleep(1)
 
     min_detail = 25 / 1000
-    e_max = 2.48
+    e_max = 1.7
     e_min = 1.2
-    experiment_num = '5.3'
-    N = 125
+    experiment_num = '12.1'
+    N = 200
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -726,8 +726,8 @@ def main() -> None:
                             # alpha=asym,
                             beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}]',
-                            # experiment_suf=f'γ={asym / ax:.3f} N=200',
+                            # experiment_suf=f'[{experiment_num}]',
+                            experiment_suf=f'b γ={asym / ax:.3f} N=200',
                             e_max=e_max,
                             e_min=e_min
                         )

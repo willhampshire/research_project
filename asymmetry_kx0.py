@@ -17,7 +17,7 @@ cwd = Path(os.getcwd())
 results_dir = cwd / "WS2_Grating_Eamonn" / "Results"
 results_dir.mkdir(exist_ok=True)
 
-project_folder = results_dir / 'ASYM MoS₂, SiO₂, Si [11.9.7] γ e_max=2.2'
+project_folder = results_dir / 'ASYM MoS₂, SiO₂, Si [11.9.8] γ e_max=1.7'
 json_path = project_folder / 'summary_asym.json'
 meta_json_path = project_folder / 'summary_asym_meta.json'
 
@@ -224,12 +224,13 @@ for p in periods:
             cbar = fig.colorbar(pcm, location='right')
             cbar.set_label('Reflectivity contrast')
             plt.minorticks_on()
-
+            # plt.ylim([1.2,1.7])
 
             # Save and show
             os.makedirs(project_folder / 'images', exist_ok=True)
             image_path = project_folder / 'images' / choose_str_1
             plt.tight_layout()
+
             plt.savefig(image_path, dpi=300)
             plt.show()
             print(f"SAVED IMAGE TO {image_path}")
@@ -278,9 +279,9 @@ for p in periods:
                 sns.set_theme(style="whitegrid")
                 plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
 
-                for col in new_cols[::20]:
+                for col in new_cols[::40]:
                     sns.lineplot(ax=ax, data=df_reflec_energy, x=df_reflec_energy.index, y=col,
-                                 label=f"{col:.3f}")
+                                 label=f"{col:.2f}")
 
                 ax.set_xlabel('Energy [eV]')
                 ax.set_ylabel('Reflectivity [arb]')
@@ -295,13 +296,52 @@ for p in periods:
                 ax.legend(title='γ', loc='best')
                 kx0 = r'k$_x$=0'
                 experiment_name_nonperplex = experiment_name.replace(phys.sub_2, r'$_2$')
-                plt.title(f"Normal incidence {kx0} line profiles in Energy\n{experiment_name_nonperplex}  "
+                plt.title(f"Reflectance profiles at {kx0} in Energy\n{experiment_name_nonperplex}  "
                           f"Λ={choose[0]*1000:.0f}nm t={choose[1]*1000:.0f}nm FF={choose[2]:.3f}")
+
+                # plt.xlim([1.2, 1.7])
                 # Save and show
                 image_path_b = project_folder / 'images' / choose_str_2
                 plt.savefig(image_path_b, dpi=300)
                 print(f"SAVED IMAGE TO {image_path_b}")
 
                 plt.show()
+
+
+            # subtract R0
+
+            fig, ax = plt.subplots()
+            sns.set_theme(style="whitegrid")
+            plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
+
+            df_reflec_energy_fano = df_reflec_energy.subtract(df_reflec_energy.iloc[:, 0], axis=0)
+
+            for col in new_cols[::40]:
+                sns.lineplot(ax=ax, data=df_reflec_energy_fano, x=df_reflec_energy_fano.index, y=col,
+                             label=f"{col:.2f}")
+
+            ax.set_xlabel('Energy [eV]')
+            ax.set_ylabel('Reflectivity [arb]')
+
+            ax.minorticks_on()
+            ax.set_xlim([e_min, e_max])
+            # ax.set_ylim([0,1])
+
+            # ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
+
+            # Add legend and show the plot
+            ax.legend(title='γ', loc='best')
+            kx0 = r'k$_x$=0'
+            experiment_name_nonperplex = experiment_name.replace(phys.sub_2, r'$_2$')
+            plt.title(f"Reflectance Fano profiles at {kx0} in Energy\n{experiment_name_nonperplex}  "
+                      f"Λ={choose[0] * 1000:.0f}nm t={choose[1] * 1000:.0f}nm FF={choose[2]:.3f}")
+
+            # plt.xlim([1.2, 1.7])
+            # Save and show
+            image_path_c = project_folder / 'images' / 'Fano_profiles.png'
+            plt.savefig(image_path_c, dpi=300)
+            print(f"SAVED IMAGE TO {image_path_c}")
+
+            plt.show()
 
 
