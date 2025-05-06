@@ -26,7 +26,7 @@ cwd = Path(os.getcwd())
 
 # results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [11.9.3] β=0.090'
 # results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si [5.10]'
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [5.20]'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [5.22] t=100'
 
 
 savepath = cwd / 'mode_fitting' / 'v2'
@@ -66,7 +66,7 @@ def fit_simulation(results_dir):
     signalR = (signalR - np.min(signalR)) / (np.max(signalR) - np.min(signalR))
 
 
-    max_eV = 1.7
+    max_eV = 2.2
     min_eV = 1.2
     lbda_min = 1.240 / max_eV # y limits
     lbda_max = 1.240 / min_eV
