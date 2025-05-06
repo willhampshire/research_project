@@ -24,8 +24,9 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [11.9.3] β=0.090'
-results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si [5.10]'
+# results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [11.9.3] β=0.090'
+# results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'WS₂, SiO₂, Si [5.10]'
+results_top_dir = cwd / "WS2_Grating_Eamonn" / "Results" / 'MoS₂, SiO₂, Si [5.20]'
 
 
 savepath = cwd / 'mode_fitting' / 'v2'
@@ -65,7 +66,7 @@ def fit_simulation(results_dir):
     signalR = (signalR - np.min(signalR)) / (np.max(signalR) - np.min(signalR))
 
 
-    max_eV = 2.2
+    max_eV = 1.7
     min_eV = 1.2
     lbda_min = 1.240 / max_eV # y limits
     lbda_max = 1.240 / min_eV
@@ -343,7 +344,7 @@ def fit_simulation(results_dir):
         :param N: Square dimension array length (same N as in fitted_to_graph)
         :return: Original pixel coordinates corresponding to input eV values
         """
-        max_energy, min_energy = 1.24 / 2.2, 1.24 / 1.2
+        max_energy, min_energy = 1.24 / max_eV, 1.24 / 1.2
         min_pixel, max_pixel = 0, N
         try:
             values = 1.24 / array
@@ -360,7 +361,7 @@ def fit_simulation(results_dir):
         :param array: list or single number
         :return: new list or number
         """
-        max_energy, min_energy = 1.24 / 2.2, 1.24 / 1.2
+        max_energy, min_energy = 1.24 / max_eV, 1.24 / 1.2
         min_pixel, max_pixel = 0, N
         values = max_energy - (array - min_pixel) * (max_energy - min_energy) / (max_pixel - min_pixel)
         return 1.24 / values

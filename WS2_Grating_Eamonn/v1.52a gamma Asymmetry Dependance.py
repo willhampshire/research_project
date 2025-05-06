@@ -354,7 +354,7 @@ def time_it(func):
 @time_it
 def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:float|None=None, beta:float|None=None,
                    experiment_suf:str=None, min_detail:float=0.1,
-                   e_max:float=2.2, e_min:float=1.2):
+                   e_max:float=2.2, e_min:float=1.2) -> List[float]:
     """
     Main simulation function. Assume all units micron.
     :param N: resolution of simulation
@@ -562,6 +562,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
 
 
     signalR_ = (R - R_sub) / R_sub
+    signalR_non_normalised = signalR_
 
     # signalR=R
     # all signalR values nan fix!!
@@ -626,7 +627,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     images_folder.mkdir(exist_ok=True)
     data_folder.mkdir(exist_ok=True)
 
-    np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
+    # np.savetxt(data_folder / (project_name + ' - ' + details + " SIGNALR.csv"), signalR, delimiter=',')
 
     R_data=np.column_stack([lbda, R])
     R_data=np.row_stack([np.concatenate([[np.nan],k_scan]), R_data])
@@ -680,7 +681,7 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     global json_dir
     json_dir = results_dir / project_name
 
-    return signalR
+    return signalR_non_normalised
 
 
 def range_in(start:float, stop:float, step:float) -> List[float]:
@@ -733,7 +734,7 @@ def main() -> None:
     min_detail = 25 / 1000
     e_max = 1.7
     e_min = 1.2
-    experiment_num = '11.9.8'
+    experiment_num = '11.9.9'
     N=200
 
     asyms_new_:list = []

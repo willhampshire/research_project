@@ -15,9 +15,9 @@ from chars import greek, phys
 
 cwd = Path(os.getcwd())
 results_dir = cwd / "WS2_Grating_Eamonn" / "Results"
-results_dir.mkdir(exist_ok=True)
+# results_dir.mkdir(exist_ok=True)
 
-project_folder = results_dir / 'ASYM MoS₂, SiO₂, Si [11.9.8] γ e_max=1.7'
+project_folder = results_dir / 'ASYM MoS₂, SiO₂, Si [11.9.9] γ e_max=1.7'
 json_path = project_folder / 'summary_asym.json'
 meta_json_path = project_folder / 'summary_asym_meta.json'
 
@@ -120,6 +120,9 @@ for p in periods:
             # Set index as descending energy
             df_reflectivity.index = np.linspace(1.24/e_max, 1.24/e_min, len(df_reflectivity.index))
             df_reflectivity.sort_index(ascending=False)
+
+            df_reflectivity_norm = (df_reflectivity - df_reflectivity.min()) / (df_reflectivity.max() - df_reflectivity.min())
+            df_reflectivity = df_reflectivity_norm
 
             os.makedirs(project_folder / 'asym_heatmap', exist_ok=True)
             df_reflectivity.to_csv(project_folder / 'asym_heatmap' / 'energy_vs_asym_heatmap.csv',
@@ -293,7 +296,7 @@ for p in periods:
                 # ax.axvspan(xmin=2.1, xmax=2.2, color='grey', alpha=0.3, label='exciton')
 
                 # Add legend and show the plot
-                ax.legend(title='γ', loc='best')
+                ax.legend(title='γ', loc='upper right')
                 kx0 = r'k$_x$=0'
                 experiment_name_nonperplex = experiment_name.replace(phys.sub_2, r'$_2$')
                 plt.title(f"Reflectance profiles at {kx0} in Energy\n{experiment_name_nonperplex}  "
@@ -309,9 +312,11 @@ for p in periods:
 
 
             # subtract R0
+            plt.clf()
 
+            # sns.set_theme(style="whitegrid")
+            sns.set_context("notebook")
             fig, ax = plt.subplots()
-            sns.set_theme(style="whitegrid")
             plt.rcParams.update({"xtick.bottom": True, "ytick.left": True})
 
             df_reflec_energy_fano = df_reflec_energy.subtract(df_reflec_energy.iloc[:, 0], axis=0)
@@ -333,7 +338,7 @@ for p in periods:
             ax.legend(title='γ', loc='best')
             kx0 = r'k$_x$=0'
             experiment_name_nonperplex = experiment_name.replace(phys.sub_2, r'$_2$')
-            plt.title(f"Reflectance Fano profiles at {kx0} in Energy\n{experiment_name_nonperplex}  "
+            plt.title(f"Reflectivity profiles relative to {greek.gamma}=0 at {kx0} in Energy\n{experiment_name_nonperplex}  "
                       f"Λ={choose[0] * 1000:.0f}nm t={choose[1] * 1000:.0f}nm FF={choose[2]:.3f}")
 
             # plt.xlim([1.2, 1.7])
