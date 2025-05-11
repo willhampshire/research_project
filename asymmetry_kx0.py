@@ -17,7 +17,7 @@ cwd = Path(os.getcwd())
 results_dir = cwd / "WS2_Grating_Eamonn" / "Results"
 # results_dir.mkdir(exist_ok=True)
 
-project_folder = results_dir / 'ASYM MoS₂, SiO₂, Si [11.9.9] γ e_max=1.7'
+project_folder = results_dir / 'ASYM MoS₂, SiO₂, Si [11.9.10] γ e_max=1.7'
 json_path = project_folder / 'summary_asym.json'
 meta_json_path = project_folder / 'summary_asym_meta.json'
 
@@ -227,6 +227,14 @@ for p in periods:
             cbar = fig.colorbar(pcm, location='right')
             cbar.set_label('Reflectivity contrast')
             plt.minorticks_on()
+
+            vals, labs, cs, styles = [0, 0.36, 0.45, 0.54], ['', 'radiative', 'exceptional', 'radiative'], \
+                ['k', 'm', 'w', 'm'], [':', '--', ':', '--']
+            for val, label, colour, style in zip(vals, labs, cs, styles):
+                label = f'{greek.gamma}={val:.2f} {label}'
+                axs.axvline(x=val, color=colour, linestyle=style, linewidth=2, label=label)
+
+            axs.legend(loc='upper left')
             # plt.ylim([1.2,1.7])
 
             # Save and show

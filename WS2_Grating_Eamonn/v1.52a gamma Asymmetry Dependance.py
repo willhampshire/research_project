@@ -734,7 +734,7 @@ def main() -> None:
     min_detail = 25 / 1000
     e_max = 1.7
     e_min = 1.2
-    experiment_num = '11.9.9'
+    experiment_num = '11.9.10'
     N=200
 
     asyms_new_:list = []

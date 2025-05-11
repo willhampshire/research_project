@@ -670,13 +670,13 @@ def main() -> None:
 
     # periods = [0.2, 0.4, 0.6]
     # thicknesses = [0.02, 0.06, 0.1]
-    filling = [0.7, 0.8]
+    # filling = [0.7, 0.8]
 
-    # periods = [0.25]
-    thicknesses = [0.1]
-    # filling = [0.7]
+    periods = [0.25]
+    thicknesses = [0.03]
+    filling = [0.7]
 
-    periods = range_in(0.2, 0.3, 0.1/2)
+    # periods = range_in(0.2, 0.3, 0.1/2)
     # thicknesses = range_in(0.02, 0.1, 0.02)
     # filling = range_in(0.7, 0.75, 0.05)
 
@@ -704,10 +704,10 @@ def main() -> None:
     time.sleep(1)
 
     min_detail = 25 / 1000
-    e_max = 2.2
+    e_max = 1.7
     e_min = 1.2
-    experiment_num = '5.22'
-    N = 125
+    experiment_num = ''
+    N = 200
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -726,8 +726,8 @@ def main() -> None:
                             # alpha=asym,
                             # beta=asym,
                             min_detail=min_detail,
-                            experiment_suf=f'[{experiment_num}] t=100',
-                            # experiment_suf=f'b γ={asym / ax:.3f} N=200',
+                            # experiment_suf=f'[{experiment_num}]',
+                            experiment_suf=f'b γ={asym / ax:.3f} N=200',
                             e_max=e_max,
                             e_min=e_min
                         )
