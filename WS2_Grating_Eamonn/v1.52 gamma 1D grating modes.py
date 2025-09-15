@@ -75,15 +75,16 @@ class Material:
     :param description :str
     :param pattern :Pattern - define on call or assign later
     """
-    def __init__(self, name:str, dispersive:bool,
-                 material_path:str=None, material_n_k:list=None,
-                 pattern:Pattern=None, thickness:float=None, thickness_sub:float=None,
-                 description:str=None):
+
+    def __init__(self, name: str, dispersive: bool,
+                 material_path: str | Path = None, material_n_k: list = None,
+                 pattern: Pattern = None, thickness: float = None, thickness_sub: float = None,
+                 description: str = None):
 
         self.description = description
         self.name = name
         self.dispersive = dispersive
-        self.material_path = material_path
+        self.material_path = str(material_path) if material_path else None
         self.material_n_k = material_n_k
         self.thickness = thickness
         self.thickness_sub = thickness_sub
@@ -397,6 +398,9 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     # 1 - Location for a dispersive material;
     # 2 - [n,k] for a non-dispersive material
 
+    cwd = Path.cwd()
+    materials_dir = cwd / 'WS2_Grating_Eamonn' / 'Materials'
+
     air = Material('air', dispersive=False,
                  material_n_k=[1,0],
                  description="Air.")
@@ -407,33 +411,33 @@ def run_simulation(N:int, period:float, thickness:float, filling:float, alpha:fl
     #                description=f"Silicon Dioxide substrate.")
 
     SiO2 = Material(f'SiO{phys.sub_2}', dispersive=True,
-                    material_path='Materials/SiO2_Horiba.txt',
+                    material_path=materials_dir/'SiO2_Horiba.txt',
                     description=f"Silicon Dioxide substrate.")
 
 
     hBN = Material(f'hBN', dispersive=True,
-                    material_path='Materials/hBN_Zotev.txt',
+                    material_path=materials_dir/'hBN_Zotev.txt',
                     description=f"HBN.")
 
     Si = Material(f'Si', dispersive=True,
-                   material_path='Materials/cSi_Green_2008.txt',
+                   material_path=materials_dir/'cSi_Green_2008.txt',
                    description=f"Silicon substrate.")
 
     Au = Material(f'Au', dispersive=True,
-                   material_path='Materials/Au_Johnson.txt',
+                   material_path=materials_dir/'Au_Johnson.txt',
                    description=f"Gold layer.")
 
     WS2 = Material(f'WS{phys.sub_2}', dispersive=True,
-                   material_path='Materials/WS2_Munkhbat2022.txt',
+                   material_path=materials_dir/'WS2_Munkhbat2022.txt',
                    # 'Materials/WSe2_Zotev.txt' 'Materials/WS2_Munkhbat2022.txt'
                    description=f"TMD layer, WS{phys.sub_2}.")
 
     WS2_ZONG = Material(f'WS{phys.sub_2} Zong Lorentzian', dispersive=True,
-                        material_path='Materials/Zong et al. Lorentzian WS2/2eV_ex_lorentzian_Zong.csv',
+                        material_path=materials_dir/'Zong et al. Lorentzian WS2'/'2eV_ex_lorentzian_Zong.csv',
                         description=f"TMD layer, WS{phys.sub_2}. Lorenzian dielectric, exciton 2eV.")
 
     MoS2 = Material(f'MoS{phys.sub_2}', dispersive=True,
-                   material_path='Materials/MoS2_Munkhbat_o_2022.txt',
+                   material_path=materials_dir/'MoS2_Munkhbat_o_2022.txt',
                    # 'Materials/WSe2_Zotev.txt' 'Materials/WS2_Munkhbat2022.txt'
                    description=f"TMD layer, MoS{phys.sub_2}.")
 
@@ -695,7 +699,7 @@ def main() -> None:
 
     gammas = [0.36, 0.45, 0.5, 0.54]
     asyms = gammas
-    asyms = [0.]
+    asyms = [0.36]
 
     num_loops = len(periods)*len(thicknesses)*len(filling)*len(asyms)
     print(f"Estimated time for {num_loops:.0f} loops, 10s * {num_loops:.0f} = {10*num_loops/60:.1f}mins for N=75, "
@@ -707,7 +711,7 @@ def main() -> None:
     e_max = 1.7
     e_min = 1.2
     experiment_num = ''
-    N = 200
+    N = 125
 
     # CHANGE experiment_suf BEFORE RUNNING TO AVOID MESSY DATA SAVES, if changing experiment parameters
     for ax in periods:
@@ -724,7 +728,7 @@ def main() -> None:
                         run_simulation(
                             N=N, period=ax, thickness=t, filling=ff,
                             # alpha=asym,
-                            # beta=asym,
+                            beta=asym,
                             min_detail=min_detail,
                             # experiment_suf=f'[{experiment_num}]',
                             experiment_suf=f'b γ={asym / ax:.3f} N=200',
